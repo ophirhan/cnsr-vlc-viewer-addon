@@ -1,0 +1,1 @@
+# cnsr-vlc-viewer-addon
