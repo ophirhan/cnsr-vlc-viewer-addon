@@ -10,7 +10,7 @@ stations = {
 }
 
 function descriptor()
-    return { title = "csnr" ;
+    return { title = "cnsr" ;
              version = "0.1" ;
              author = "EBT" ;
              capabilities = {} }
@@ -19,19 +19,27 @@ end
 
 -- Function triggered when the extension is activated
 function activate()
+	--1. this is new: 
+	a = vlc.input.item():uri()
+	i = string.find(a, ".[^.]*$")
+	b = string.sub(a, 0, i)
+	cnsr_name = b .. "cnsr"
+	cnsr_file = io.open(cnsr_name,"r")
+	--1. until here we dont know if it works!
+	
 	dlg2 = vlc.dialog("user options: select categories to censor")
 	checkbox_1 = dlg2:add_check_box("violence",20,2,3,3)
 	checkbox_2 = dlg2:add_check_box("verbal abuse",20,5,3,3)
 	checkbox_3 = dlg2:add_check_box("nudity",20,8,3,3)
 	checkbox_4 = dlg2:add_check_box("alcohol and drug consumption",20,11,3,3)
 	button_apply = dlg2:add_button("apply categories to censor",click_play, 6, 10, 3, 3)
+	--button_apply = dlg2:add_button(vlc.input.item():uri(),click_play, 6, 10, 3, 3)
     -- Add the radio stations
     -- for idx, details in ipairs(stations) do
         -- list:add_value(details.name, idx)
     -- end
     dlg2:show()
 end
-
 
 function click_play()
 	type1= checkbox_1:get_checked()
