@@ -1,6 +1,6 @@
 --[[
- Streaming Radio Player extension for VLC &gt;= 1.1.0
- Authors: Ben Dowling (http://www.coderholic.com)
+ CNSR extention for VLC;
+ Authors: EBT
 --]]
 
 local dlg2 = nil
