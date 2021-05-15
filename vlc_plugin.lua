@@ -1,4 +1,3 @@
-tags= {}
 local dlg2 = nil
 types= {}
 
@@ -6,7 +5,7 @@ function descriptor()
     return { title = "cnsr" ;
              version = "0.1" ;
              author = "EEO" ;
-             capabilities = {"menu","playing-listener"} }
+             capabilities = {"menu","playing-listener", "input-listener"} }
 	
 end
 
@@ -23,6 +22,13 @@ function hms_ms_to_ms(time_string)
 end
 
 function load_cnsr_file()
+	input = vlc.object.input()
+	if input == nil then
+		return
+	end
+	tags = {}
+	duration_ms = vlc.input.item():duration() * 1000
+	tag_index = 1
 	local uri = vlc.input.item():uri()
 	uri = unescape(uri)
 	local uri_sans_extension = strip_extension(uri)
@@ -30,32 +36,34 @@ function load_cnsr_file()
 	
 	local cnsr_file = io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
-		dlg = vlc.dialog("failed: ".. cnsr_uri)
+		dlg = vlc.dialog("failed: " .. cnsr_uri)
 		dlg:show()
 	end
 	io.input(cnsr_file)
 	
-	local i =0
+	local i = 1
 	for line in io.lines() do
 		line = string.gsub(line," ","")
 		local times, typ = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
 		local start_time, end_time = string.match(times,"([^-]+)-([^-]+)")
+		typ = tonumber(typ)
 		
-		timeline = {}
-		timeline[0] = hms_ms_to_ms(start_time) -- maybe store in timeline["start"]
-		timeline[1] = hms_ms_to_ms(end_time)
-		timeline[2] = tonumber(typ) --maybe close dialog first and keep only tags with suitable tags, would save major headaches after.
-		tags[i] = timeline
-		i = i+1
+		if types[typ] then
+			timeline = {}
+			timeline["start"] = hms_ms_to_ms(start_time)
+			timeline["end"] = hms_ms_to_ms(end_time)
+			tags[i] = timeline
+			i = i+1
+		end
 	end
 	io.close(cnsr_file)
 	cnsr_file = nil
 	collectgarbage()
+	--vlc.msg.info("read success")
 end
 
 -- Function triggered when the extension is activated
 function activate()
-	load_cnsr_file()
 	dlg2 = vlc.dialog("censor")
 	checkbox_1 = dlg2:add_check_box("violence",20,2,3,3)
 	checkbox_2 = dlg2:add_check_box("verbal abuse",20,5,3,3)
@@ -82,42 +90,51 @@ function click_play()
 	types[3] = checkbox_3:get_checked()
 	types[4] = checkbox_4:get_checked()
 	close_dlg()
-	--maybe parse cnsr file here and busy wait while the video file wasn't selected?
-	
-	-- maybe refactor from this point to loop function?
-	local input = vlc.object.input()
-	local duration_ms = vlc.input.item():duration() * 1000
-	local i = 0
-	local loop_counter = 0
-	while true do --should exit when paused and triggered again when resumed
-		loop_counter = (loop_counter + 1) % 1000000
-		if loop_counter == 0 then
-			vlc.keep_alive() -- might be slow function so we don't want to call it more then we have to.
-		end
-		
-		--find right i
-		local current_time = vlc.var.get(input,"time") / 1000
-		while i > 0 and current_time < tags[i-1][1] do --while current_time < previous tag end time
-			i = i - 1
-		end
-		while i < (#tags - 1) and current_time > tags[ i + 1 ][0] do --both while loops not thought out, what about collisions, maybe sort by end time?
-			i = i + 1 --while current_time > next tag start/end time? my head hurts
-		end
-		
-		local next_tag_start = tags[i][0]
-		local next_end_time = tags[i][1]
-		local typ = tags[i][2] -- don't want to deal with types here
-		
-		if (current_time > next_tag_start and current_time < next_end_time) then
-			if (types[typ] == true) then -- don't want to deal with types here
-				vlc.var.set(input,"position",(next_end_time+1) / duration_ms)
-			end
-			i = i + 1
-		end
-	end   
+	load_cnsr_file()
+	loop()
 end
 
---MAJOR problem VLC doesn't always properly close- check the task manager
+function loop()
+	if vlc.playlist.status() ~= "playing" then
+		return
+	end
+	
+	local loop_counter = 0
+	while true do
+		loop_counter = (loop_counter + 1) % 1000000
+		if loop_counter == 0 then  -- might be slow functions so we don't want to call them more then we have to.
+			if vlc.playlist.status() ~= "playing" then
+				break
+			end
+			vlc.keep_alive()
+		end
+		
+		--find right tag_index
+		local current_time = vlc.var.get(input,"time") / 1000
+		while tag_index > 1 and current_time < tags[tag_index-1]["end"] do --while current_time < previous tag end time
+			tag_index = tag_index - 1
+		end
+		while tag_index < #tags and current_time > tags[tag_index]["end"] do --while current_time > current tag end time?
+			tag_index = tag_index + 1 --both while loops not thought out, what about collisions, maybe sort by end time?
+		end
+		
+		local next_tag_start = tags[tag_index]["start"]
+		local next_end_time = tags[tag_index]["end"]
+		
+		if (current_time > next_tag_start and current_time < next_end_time) then
+			vlc.var.set(input,"position",(next_end_time+1) / duration_ms)
+		end
+	end
+end
+
+
+function input_changed()
+	load_cnsr_file()
+end
+
+function playing_changed()
+	loop()
+end
 
 
 -- Function triggered when the extension is deactivated
@@ -135,6 +152,8 @@ function close_dlg()
   dlg2 = nil
   collectgarbage() --~ !important	
 end
+
+--MAJOR problem VLC doesn't always properly close- check the task manager
 
 function close()
     vlc.deactivate()
