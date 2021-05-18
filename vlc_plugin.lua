@@ -1,17 +1,31 @@
-local dlg2 = nil
-categories = {[1] = {description = "violence"},
-			[2] = {description = "verbal abuse"},
-			[3] =  {description = "nudity"},
-			[4] =  {description = "alcohol and drug consumption"}} --add epilepsy category
+local dlg = nil
+categories = {[1] = {description = "violence", censor=true},
+			[2] = {description = "verbal abuse", censor=true},
+			[3] =  {description = "nudity", censor=true},
+			[4] =  {description = "alcohol and drug consumption", censor=true}} --add epilepsy category
 
 function descriptor()
     return { title = "cnsr" ;
              version = "0.1" ;
              author = "EEO" ;
-             capabilities = {"playing-listener", "input-listener"};
+             capabilities = {"menu", "playing-listener", "input-listener"};
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
 	
 end
+
+
+function menu()
+	return {"Modify censor categories", "Retry loading cnsr file"}
+  end
+
+  function trigger_menu(dlg_id)
+	if dlg_id == 1 then
+	  show_category_selection()
+	elseif dlg_id == 2 then
+	  load_cnsr_file()
+	end
+	collectgarbage() --~ !important	
+  end 
 
 function strip_extension(uri)
 	uri = string.sub(uri,9)
@@ -33,14 +47,14 @@ function load_cnsr_file()
 	tags = {}
 	tag_index = 1
 	local uri = vlc.input.item():uri()
-	uri = unescape(uri)
+	uri = vlc.strings.decode_uri(uri)
 	local uri_sans_extension = strip_extension(uri)
 	local cnsr_uri = uri_sans_extension .. "cnsr"
 	
 	local cnsr_file = io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
-		dlg = vlc.dialog("failed: " .. cnsr_uri)
-		dlg:show()
+		vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
+		return
 	end
 	io.input(cnsr_file)
 	
@@ -64,27 +78,23 @@ function load_cnsr_file()
 	--vlc.msg.info("read success")
 end
 
--- Function triggered when the extension is activated
-function activate()
-	dlg2 = vlc.dialog("censor")
+function show_category_selection()
+	close_dlg()
+	dlg = vlc.dialog("Category selection")
 	local pos = 2
 	for i,v in ipairs(categories) do
-		v.checkbox = dlg2:add_check_box(v.description,20,pos,3,3)
+		v.checkbox = dlg:add_check_box(v.description,20,pos,3,3)
+		v.checkbox:set_checked(v.censor)
 		pos = pos + 3
 	end
-	button_apply = dlg2:add_button("apply categories to censor",click_play, 6, 10, 3, 3)
-    dlg2:show()
+	button_apply = dlg:add_button("apply categories to censor",click_play, 6, 10, 3, 3)
+    dlg:show()
 end
 
-function unescape (s) --replace with vlc.strings.decode_uri()
-	s = string.gsub(s, "+", " ")
-	s = string.gsub(s, "%%(%x%x)", 
-		function (h)
-			return string.char(tonumber(h, 16))
-		end)
-	return s
+-- Function triggered when the extension is activated
+function activate()
+	show_category_selection()
 end
-
 
 function click_play()
 	for i,v in ipairs(categories) do
@@ -96,7 +106,7 @@ function click_play()
 end
 
 function loop()
-	if vlc.playlist.status() ~= "playing" then
+	if #tags == 0 or vlc.playlist.status() ~= "playing" then
 		return
 	end
 	
@@ -128,6 +138,7 @@ function loop()
 			vlc.var.set(input,"time", next_end_time + 10000) --add option to mute
 			vlc.osd.message("skipped " .. categories[category].description, nil, "bottom-right") --what about collisions? add how many seconds were skipped?
 		end
+		vlc.win.console_wait(30) --ms. optinal. only works on windows. maybe check if platform is windows.
 	end
 end
 
@@ -140,27 +151,45 @@ function playing_changed()
 	loop()
 end
 
---lua README titles to explore: "Objects (player, libvlc, vout), Renderer discovery"
 
 
 -- Function triggered when the extension is deactivated
 function deactivate()
-	if dlg2 then
-		dlg2:hide()
+	if dlg then
+		dlg:hide()
 	end
 end
 
 function close_dlg()
-  if dlg2 ~= nil then
-    dlg2:hide() 
+  if dlg ~= nil then
+    dlg:hide() 
   end
   
-  dlg2 = nil
+  dlg = nil
   collectgarbage() --~ !important	
 end
-
---MAJOR problem VLC doesn't always properly close- check the task manager
 
 function close()
     vlc.deactivate()
 end
+
+
+
+--MAJOR problems:
+	--(1) VLC doesn't always properly close- check the task manager
+	--(2) clicking on the "view" menu while VLC is playing makes VLC crash.
+
+--TODOs:
+	--Solve (1): investigate dialog closing, garbage collection.
+
+	--Solve (2): Try refactoring loop() to a separate extension residing in the lua\interface folder,
+	--this *might* solve (2). We might have to find a threading solution or create a separte windows
+	--service/program to externally control vlc.
+
+	--Investigate saving/loading configurations to/from a file.
+
+	--Add mute support.
+
+	--Lua README titles to explore: "Objects" (player, libvlc, vout), "Renderer discovery"
+
+	--Fix readme
