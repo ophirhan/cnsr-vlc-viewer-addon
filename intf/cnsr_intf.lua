@@ -37,31 +37,65 @@ categories = {[1] = "violence",
 			[4] =  "alcohol and drug consumption"}
 
 function Looper()
+	Log("loop start")
 	tag_index = 1
+	mute_start = 0
+	mute_end = 0
+	vol = vlc.volume.get()
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		loop_start_time = vlc.misc.mdate()
 		Get_config()
+		new_vol = vlc.volume.get()
+		if new_vol ~=  0 then
+			vol = new_vol
+		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags and #config.CNSR.tags ~= 0 then -- no input or stopped input
 
 			--find right tag_index
 			--current_time = vlc.var.get(config.CNSR.input,"time")
 			current_time = vlc.var.get(vlc.object.input(),"time")
+			
 			while tag_index > 1 and current_time < config.CNSR.tags[tag_index-1].end_time do --while current_time < previous tag end time
 				tag_index = tag_index - 1
 			end
+			
+			
 			while tag_index < #config.CNSR.tags and current_time > config.CNSR.tags[tag_index].end_time do --while current_time > current tag end time?
 				tag_index = tag_index + 1 --both while loops not thought out, what about collisions, maybe sort by end time?
 			end
 			
-			local next_tag_start = config.CNSR.tags[tag_index].start_time
-			local next_end_time = config.CNSR.tags[tag_index].end_time
+			local tag_start = config.CNSR.tags[tag_index].start_time
+			local end_time = config.CNSR.tags[tag_index].end_time
 			local category = config.CNSR.tags[tag_index].category
+			local action = config.CNSR.tags[tag_index].action
 			
+			if current_time > mute_end and mute_end ~= 0 then
+				vlc.volume.set(vol)
+				mute_end = 0
+				mute_start = 0
+			end
+			if current_time < mute_start then
+				vlc.volume.set(vol)
+				mute_start = 0
+				mute_end = 0
+			end
 			--osd.slider( position, type, [id] ): Display slider. Position is an integer from 0 to 100. Type can be "horizontal" or "vertical".
-			if (current_time > next_tag_start and current_time < next_end_time) then -- maybe add slider leading to skip?
-				vlc.var.set(vlc.object.input(),"time", next_end_time + 10000) --add option to mute
-				vlc.osd.message("skipped " .. categories[category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
+			if (current_time > tag_start and current_time < end_time) then -- maybe add slider leading to skip?
+				if action == 2 then --skip
+					vlc.var.set(vlc.object.input(),"time", end_time + 10000) --add option to mute
+					vlc.osd.message("skipped " .. categories[category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
+				else -- 2 mute
+					if new_vol ~= 0 then
+						vlc.volume.set(0)
+					end
+					vlc.osd.message("muted " .. categories[category], nil, "bottom-right")
+					mute_end = math.max(mute_end, end_time)
+					mute_start = math.max(mute_start, tag_start)
+					if tag_index < #config.CNSR.tags then
+						tag_index = tag_index + 1
+					end
+				end
 			end
 			
 		end
