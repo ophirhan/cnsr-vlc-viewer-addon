@@ -29,15 +29,16 @@ Create directory if it does not exist!
 
 config={}
 cfg={}
-checkboxes = {}
+dropdowns = {}
 
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
 local dlg = nil
 
-categories = {[1] = {description = "violence", censor=true},
-			[2] = {description = "verbal abuse", censor=true},
-			[3] =  {description = "nudity", censor=true},
-			[4] =  {description = "alcohol and drug consumption", censor=true}} --add epilepsy category
+--add epilepsy category
+categories = {[1] = {description = "violence", censor=2},
+			[2] = {description = "verbal abuse", censor=2},
+			[3] =  {description = "nudity", censor=2},
+			[4] =  {description = "alcohol and drug consumption", censor=2}}
 -- defaults
 
 function descriptor()
@@ -78,26 +79,32 @@ function trigger_menu(dlg_id)
 	end
 end
 
-
+options = {"Show", "Skip", "Mute"}
 
 function show_category_selection()
 	close_dlg()
 	dlg = vlc.dialog("Category selection")
 	local pos = 2
 	for i,v in ipairs(categories) do
-		checkboxes[v.description] = dlg:add_check_box(v.description,20,pos,3,3)
-		checkboxes[v.description]:set_checked(v.censor)
+		dlg:add_label(v.description, 3,pos,3,3)
+		dropdowns[v.description] = dlg:add_dropdown(6,pos,3,3)
+		for j,w in ipairs(options) do
+			dropdowns[v.description]:add_value(w, j)
+		end
 		pos = pos + 3
 	end
-	button_apply = dlg:add_button("apply categories to censor",click_play, 6, 10, 3, 3)
+	button_apply = dlg:add_button("apply categories to censor",click_play, 4, pos, 3, 3)
     dlg:show()
 end
 
 
 function click_play()
+	Log("click_play")
 	for i,v in ipairs(categories) do
-		v.censor = checkboxes[v.description]:get_checked()
+		v.censor = dropdowns[v.description]:get_value()
+		Log(v.description .. " " .. tostring(v.censor))
 	end
+	
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_cnsr_file()
 end
@@ -105,6 +112,7 @@ end
 
 function load_cnsr_file()
 	cfg.tags = {}
+	Log("start load cnsr")
 	if vlc.input.item() == nil then
 		Set_config(cfg, "CNSR")
 		return
@@ -128,15 +136,23 @@ function load_cnsr_file()
 		local start_time, end_time = string.match(times,"([^-]+)-([^-]+)")
 		typ = tonumber(typ)
 		
-		if categories[typ].censor then
+		--show1
+		--skip2
+		--mute3
+		if categories[typ].censor ~= 1 then
 			timeline = {}
 			timeline.start_time = hms_ms_to_us(start_time)
 			timeline.end_time = hms_ms_to_us(end_time)
 			timeline.category = typ
+			timeline.action = categories[typ].censor
 			table.insert(cfg.tags, timeline)
 		end
 	end
 	io.close(cnsr_file)
+	Log("load cnsr success")
+	for i, v in ipairs(cfg.tags) do
+		Log("h")
+	end
 	cnsr_file = nil
 	collectgarbage()
 	Set_config(cfg, "CNSR")
