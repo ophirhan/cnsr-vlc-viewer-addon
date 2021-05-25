@@ -92,9 +92,6 @@ function Looper()
 					vlc.osd.message("muted " .. categories[category], nil, "bottom-right")
 					mute_end = math.max(mute_end, end_time)
 					mute_start = math.max(mute_start, tag_start)
-					if tag_index < #config.CNSR.tags then
-						tag_index = tag_index + 1
-					end
 				end
 			end
 			

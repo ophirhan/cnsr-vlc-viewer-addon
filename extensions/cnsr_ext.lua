@@ -108,7 +108,6 @@ function click_play()
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_cnsr_file()
 end
---yes
 
 function load_cnsr_file()
 	cfg.tags = {}
@@ -117,7 +116,6 @@ function load_cnsr_file()
 		Set_config(cfg, "CNSR")
 		return
 	end
-	tag_index = 1
 	local uri = vlc.input.item():uri()
 	uri = vlc.strings.decode_uri(uri)
 	local uri_sans_extension = strip_extension(uri)
@@ -129,23 +127,42 @@ function load_cnsr_file()
 		return
 	end
 	io.input(cnsr_file)
-	
+	prev_skip_to = 0
+	open_mute = nil
 	for line in io.lines() do
 		line = string.gsub(line," ","")
 		local times, typ = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
-		local start_time, end_time = string.match(times,"([^-]+)-([^-]+)")
 		typ = tonumber(typ)
-		
-		--show1
-		--skip2
-		--mute3
-		if categories[typ].censor ~= 1 then
-			timeline = {}
-			timeline.start_time = hms_ms_to_us(start_time)
-			timeline.end_time = hms_ms_to_us(end_time)
-			timeline.category = typ
-			timeline.action = categories[typ].censor
-			table.insert(cfg.tags, timeline)
+		local action = categories[typ].censor
+		if action ~= SHOW then -- only include tags to mute or skip
+			local start_time, end_time = string.match(times,"([^-]+)-([^-]+)")
+			end_us = hms_ms_to_us(end_time)
+			if end_us > prev_skip_to then --only include tags that won't be entirely skipped by previous tag
+				start_us = hms_ms_to_us(start_time)
+				if open_mute ~= nil then
+					open_mute_end = open_mute.end_time
+					open_mute.end_time = math.min(open_mute_end, start_us) --  if colliding cut open mute short
+					table.insert(cfg.tags, open_mute)
+					if open_mute_end > end_us then -- keep if there is a remainder of mute after current tag
+						open_mute = table.clone(open_mute) -- same catogry and action
+						open_mute.start_time = end_us
+						open_mute.end_time = open_mute_end
+					else
+						open_mute = nil
+					end
+				end
+				timeline = {}
+				timeline.start_time = math.max(start_us, prev_skip_to)
+				timeline.end_time = end_us
+				timeline.category = typ
+				timeline.action = action
+				if action == SKIP then
+					prev_skip_to = end_us
+					table.insert(cfg.tags, timeline)
+				else -- action == MUTE
+					open_mute = timeline
+				end
+			end
 		end
 	end
 	io.close(cnsr_file)
