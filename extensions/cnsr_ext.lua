@@ -30,7 +30,9 @@ Create directory if it does not exist!
 config={}
 cfg={}
 dropdowns = {}
-
+SHOW = 1
+SKIP = 2
+MUTE = 3
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
 local dlg = nil
 
@@ -144,9 +146,13 @@ function load_cnsr_file()
 					open_mute.end_time = math.min(open_mute_end, start_us) --  if colliding cut open mute short
 					table.insert(cfg.tags, open_mute)
 					if open_mute_end > end_us then -- keep if there is a remainder of mute after current tag
-						open_mute = table.clone(open_mute) -- same catogry and action
-						open_mute.start_time = end_us
-						open_mute.end_time = open_mute_end
+						--open_mute = table.clone(open_mute) -- same catogry and action
+						remainder_mute = {}
+						remainder_mute.action = open_mute.action
+						remainder_mute.category = open_mute.category
+						remainder_mute.start_time = end_us
+						remainder_mute.end_time = open_mute_end
+						open_mute = remainder_mute
 					else
 						open_mute = nil
 					end
@@ -156,19 +162,29 @@ function load_cnsr_file()
 				timeline.end_time = end_us
 				timeline.category = typ
 				timeline.action = action
+				--Log(options[action])
 				if action == SKIP then
 					prev_skip_to = end_us
 					table.insert(cfg.tags, timeline)
 				else -- action == MUTE
-					open_mute = timeline
+					if open_mute == nil or timeline.end_time > open_mute.end_time then
+						open_mute = timeline
+					end
 				end
 			end
 		end
 	end
+	if open_mute ~= nil then
+		table.insert(cfg.tags, open_mute)
+	end
+
 	io.close(cnsr_file)
 	Log("load cnsr success")
 	for i, v in ipairs(cfg.tags) do
-		Log("h")
+		Log("start: " .. tostring(v.start_time/1000000))
+		Log("end: " .. tostring(v.end_time/1000000))
+		Log("description: " .. tostring(categories[v.category].description))
+		Log("action: " .. tostring(options[v.action]))
 	end
 	cnsr_file = nil
 	collectgarbage()
