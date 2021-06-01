@@ -33,6 +33,7 @@ dropdowns = {}
 SHOW = 1
 SKIP = 2
 MUTE = 3
+HIDE = 4
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
 local dlg = nil
 
@@ -81,7 +82,7 @@ function trigger_menu(dlg_id)
 	end
 end
 
-options = {"Show", "Skip", "Mute"}
+options = {"Show", "Skip", "Mute", "Hide"}
 
 function show_category_selection()
 	close_dlg()
@@ -101,10 +102,8 @@ end
 
 
 function click_play()
-	Log("click_play")
 	for i,v in ipairs(categories) do
 		v.censor = dropdowns[v.description]:get_value()
-		Log(v.description .. " " .. tostring(v.censor))
 	end
 	
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
@@ -113,7 +112,6 @@ end
 
 function load_cnsr_file()
 	cfg.tags = {}
-	Log("start load cnsr")
 	if vlc.input.item() == nil then
 		Set_config(cfg, "CNSR")
 		return
@@ -130,7 +128,7 @@ function load_cnsr_file()
 	end
 	io.input(cnsr_file)
 	prev_skip_to = 0
-	open_mute = nil
+	open_tag = nil
 	for line in io.lines() do
 		line = string.gsub(line," ","")
 		local times, typ = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
@@ -141,45 +139,61 @@ function load_cnsr_file()
 			end_us = hms_ms_to_us(end_time)
 			if end_us > prev_skip_to then --only include tags that won't be entirely skipped by previous tag
 				start_us = hms_ms_to_us(start_time)
-				if open_mute ~= nil then
-					open_mute_end = open_mute.end_time
-					open_mute.end_time = math.min(open_mute_end, start_us) --  if colliding cut open mute short
-					table.insert(cfg.tags, open_mute)
-					if open_mute_end > end_us then -- keep if there is a remainder of mute after current tag
-						--open_mute = table.clone(open_mute) -- same catogry and action
-						remainder_mute = {}
-						remainder_mute.action = open_mute.action
-						remainder_mute.category = open_mute.category
-						remainder_mute.start_time = end_us
-						remainder_mute.end_time = open_mute_end
-						open_mute = remainder_mute
+				if open_tag ~= nil then
+					if open_tag.end_time > start_us then --  if colliding cut open tag short
+						open_tag_end = open_tag.end_time
+						open_tag.end_time = start_us 
+						table.insert(cfg.tags, open_tag)
+
+						if open_tag_end > end_us then -- keep if there is a remainder of mute after current tag
+							--open_tag = table.clone(open_tag) -- same catogry and action
+							remainder_tag = {}
+							remainder_tag.action = open_tag.action
+							remainder_tag.category = open_tag.category
+							remainder_tag.start_time = end_us
+							remainder_tag.end_time = open_tag_end
+							open_tag = remainder_tag
+							
+							if action ~= open_tag.action then --open_tag.action is MUTE or HIDE
+								action = SKIP --skip if action is skip or is different than open_tag action
+							end
+						else --open_tag partly collides with current tag
+							if action ~= SKIP and action ~= open_tag.action then
+								collision_tag = {}
+								collision_tag.action = SKIP
+								collision_tag.category = typ --should be typ and open_tag.category
+								collision_tag.start_time = start_us
+								collision_tag.end_time = open_tag_end
+								table.insert(cfg.tags, collision_tag)
+								start_us = open_tag_end
+							end
+							open_tag = nil
+						end
 					else
-						open_mute = nil
+						table.insert(cfg.tags, open_tag)
 					end
 				end
-				timeline = {}
-				timeline.start_time = math.max(start_us, prev_skip_to)
-				timeline.end_time = end_us
-				timeline.category = typ
-				timeline.action = action
-				--Log(options[action])
+				tag = {}
+				tag.start_time = math.max(start_us, prev_skip_to)
+				tag.end_time = end_us
+				tag.category = typ
+				tag.action = action
 				if action == SKIP then
+					table.insert(cfg.tags, tag)
 					prev_skip_to = end_us
-					table.insert(cfg.tags, timeline)
-				else -- action == MUTE
-					if open_mute == nil or timeline.end_time > open_mute.end_time then
-						open_mute = timeline
+				else -- action == MUTE or HIDE
+					if open_tag == nil or tag.end_time > open_tag.end_time then
+						open_tag = tag
 					end
 				end
 			end
 		end
 	end
-	if open_mute ~= nil then
-		table.insert(cfg.tags, open_mute)
+	if open_tag ~= nil then
+		table.insert(cfg.tags, open_tag)
 	end
 
 	io.close(cnsr_file)
-	Log("load cnsr success")
 	for i, v in ipairs(cfg.tags) do
 		Log("start: " .. tostring(v.start_time/1000000))
 		Log("end: " .. tostring(v.end_time/1000000))

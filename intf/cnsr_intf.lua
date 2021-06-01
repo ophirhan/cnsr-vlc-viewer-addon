@@ -29,6 +29,10 @@ Create directory if it does not exist!
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 config={}
+SHOW = 1
+SKIP = 2
+MUTE = 3
+HIDE = 4
 
 
 categories = {[1] = "violence",
@@ -37,11 +41,16 @@ categories = {[1] = "violence",
 			[4] =  "alcohol and drug consumption"}
 
 function Looper()
-	Log("loop start")
 	tag_index = 1
 	mute_start = 0
 	mute_end = 0
+	hide_start = 0
+	hide_end = 0
+	hide = false
 	vol = vlc.volume.get()
+	
+
+
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		loop_start_time = vlc.misc.mdate()
@@ -80,21 +89,43 @@ function Looper()
 				mute_start = 0
 				mute_end = 0
 			end
+
+			if hide and current_time > hide_end and hide_end ~= 0 then
+				hide_end = 0
+				hide_start = 0
+				hide = false
+				vlc.var.set(o, "video-filter", "")
+			end
+			if current_time < hide_start then
+				hide_end = 0
+				hide_start = 0
+				hide = false
+				vlc.var.set(o, "video-filter", "")
+			end
 			--osd.slider( position, type, [id] ): Display slider. Position is an integer from 0 to 100. Type can be "horizontal" or "vertical".
 			if (current_time > tag_start and current_time < end_time) then -- maybe add slider leading to skip?
-				if action == 2 then --skip
+				if action == SKIP then --skip
 					vlc.var.set(vlc.object.input(),"time", end_time + 10000) --add option to mute
 					vlc.osd.message("skipped " .. categories[category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
-				else -- 2 mute
+				elseif action == MUTE then
 					if new_vol ~= 0 then
 						vlc.volume.set(0)
 					end
+
 					vlc.osd.message("muted " .. categories[category], nil, "bottom-right")
 					mute_end = math.max(mute_end, end_time)
 					mute_start = math.max(mute_start, tag_start)
-					if tag_index < #config.CNSR.tags then
-						tag_index = tag_index + 1
+				else -- action == HIDE
+					if not hide then
+						o = vlc.object.vout()
+						vlc.var.create(o, "contrast", 0)
+						vlc.var.set(o, "video-filter", "adjust")
+						hide = true
 					end
+
+					vlc.osd.message("hidden " .. categories[category], nil, "bottom-right")
+					hide_end = math.max(hide_end, end_time)
+					hide_start = math.max(mute_start, tag_start)
 				end
 			end
 			
