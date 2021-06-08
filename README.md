@@ -9,7 +9,7 @@ using [CNSR file format](https://github.com/ophirhan/cnsr-file-format-specificat
 
 This plugin censors categories like nudity, verbal abuse, violence and alchohol and drug consumption.
 
-supports Windows, Linux and Mac OS
+supports Windows, Linux and Mac OS.
 _____________________________________________________________________________________________________
 
 # Getting started
