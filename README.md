@@ -30,9 +30,9 @@ Create directory if it does not exist!
 
 # For developers
 
-1)change the lua folder's name to "luab".
+1) change the lua folder's name to "luab".
 
-2)clone the repository a new folder named "lua"
+2) clone the repository a new folder named "lua"
 
 3) copy the contents of "luab" to "lua"
 
