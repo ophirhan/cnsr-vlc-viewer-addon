@@ -37,3 +37,5 @@ Create directory if it does not exist!
 3) copy the contents of "luab" to "lua"
 
 4) delete "luab" folder
+
+and thats it! you are ready to start
