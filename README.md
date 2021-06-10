@@ -19,11 +19,17 @@ ________________________________________________________________________________
 3. access lua folder using these paths:
 
 Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua
+
 Windows (current user): %APPDATA%\VLC\lua
+
 Linux (all users): /usr/lib/vlc/lua
+
 Linux (current user): ~/.local/share/vlc/lua
+
 Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
+
 Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua Create directory if it does not exist!
+
 (create the directory if it does not exist!)
 
 3. move "cnsr_ext.lua" file into \lua\extensions\ folder.
