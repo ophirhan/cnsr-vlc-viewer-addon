@@ -25,7 +25,6 @@ INSTALLATION directory (\lua\extensions\):
 * Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua/extensions/
 Create directory if it does not exist!
 --]]----------------------------------------
--- TODO: timer/reminder/alarm; multiple time format inputs for different positions (1-9);
 
 config={}
 cfg={}
@@ -35,13 +34,13 @@ SKIP = 2
 MUTE = 3
 HIDE = 4
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
-local dlg = nil
+local dlg
 
 --add epilepsy category
-categories = {[1] = {description = "violence", censor=2},
-			[2] = {description = "verbal abuse", censor=2},
-			[3] =  {description = "nudity", censor=2},
-			[4] =  {description = "alcohol and drug consumption", censor=2}}
+categories = {[1] = {description = "violence", action=SKIP},
+			[2] = {description = "verbal abuse", action=SKIP},
+			[3] =  {description = "nudity", action=SKIP},
+			[4] =  {description = "alcohol and drug consumption", action=SKIP}}
 -- defaults
 
 function descriptor()
@@ -75,7 +74,7 @@ function trigger_menu(dlg_id)
 		show_category_selection()
 	elseif dlg_id == 2 then
 		if dlg then dlg:delete() end
-		load_cnsr_file()
+		load_and_process_tags()
 	elseif dlg_id==3 then -- Settings
 		if dlg then dlg:delete() end
 		create_dialog_S() --configure inteface script to start when VLC starts
@@ -103,105 +102,141 @@ end
 
 function click_play()
 	for i,v in ipairs(categories) do
-		v.censor = dropdowns[v.description]:get_value()
+		v.action = dropdowns[v.description]:get_value()
 	end
-	
+	Log("click play")
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
-	load_cnsr_file()
+	load_and_process_tags()
 end
 
-function load_cnsr_file()
-	cfg.tags = {}
+function get_cnsr_uri()
 	if vlc.input.item() == nil then
 		Set_config(cfg, "CNSR")
-		return
+		return nil
 	end
 	local uri = vlc.input.item():uri()
 	uri = vlc.strings.decode_uri(uri)
 	local uri_sans_extension = strip_extension(uri)
-	local cnsr_uri = uri_sans_extension .. "cnsr"
-	
-	local cnsr_file = io.open(cnsr_uri,"r")
+	return uri_sans_extension .. "cnsr"
+end
+
+function load_raw_tags_from_file()
+	local cnsr_uri = get_cnsr_uri()
+	if cnsr_uri == nil then
+		return nil
+	end
+	cnsr_file = io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
 		vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
-		return
+		return nil
 	end
 	io.input(cnsr_file)
-	prev_skip_to = 0
-	open_tag = nil
-	for line in io.lines() do
-		line = string.gsub(line," ","")
-		local times, typ = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
-		typ = tonumber(typ)
-		local action = categories[typ].censor
-		if action ~= SHOW then -- only include tags to mute or skip
-			local start_time, end_time = string.match(times,"([^-]+)-([^-]+)")
-			end_us = hms_ms_to_us(end_time)
-			if end_us > prev_skip_to then --only include tags that won't be entirely skipped by previous tag
-				start_us = hms_ms_to_us(start_time)
-				if open_tag ~= nil then
-					if open_tag.end_time > start_us then --  if colliding cut open tag short
-						open_tag_end = open_tag.end_time
-						open_tag.end_time = start_us 
-						table.insert(cfg.tags, open_tag)
 
-						if open_tag_end > end_us then -- keep if there is a remainder of mute after current tag
-							--open_tag = table.clone(open_tag) -- same catogry and action
-							remainder_tag = {}
-							remainder_tag.action = open_tag.action
-							remainder_tag.category = open_tag.category
-							remainder_tag.start_time = end_us
-							remainder_tag.end_time = open_tag_end
-							open_tag = remainder_tag
-							
-							if action ~= open_tag.action then --open_tag.action is MUTE or HIDE
-								action = SKIP --skip if action is skip or is different than open_tag action
-							end
-						else --open_tag partly collides with current tag
-							if action ~= SKIP and action ~= open_tag.action then
-								collision_tag = {}
-								collision_tag.action = SKIP
-								collision_tag.category = typ --should be typ and open_tag.category
-								collision_tag.start_time = start_us
-								collision_tag.end_time = open_tag_end
-								table.insert(cfg.tags, collision_tag)
-								start_us = open_tag_end
-							end
-							open_tag = nil
-						end
-					else
-						table.insert(cfg.tags, open_tag)
-					end
-				end
-				tag = {}
-				tag.start_time = math.max(start_us, prev_skip_to)
-				tag.end_time = end_us
-				tag.category = typ
-				tag.action = action
-				if action == SKIP then
-					table.insert(cfg.tags, tag)
-					prev_skip_to = end_us
-				else -- action == MUTE or HIDE
-					if open_tag == nil or tag.end_time > open_tag.end_time then
-						open_tag = tag
-					end
+	raw_tags ={}
+	for line in io.lines() do
+		table.insert(raw_tags, line_to_tag(line))
+	end
+	io.close(cnsr_file)
+	cnsr_file = nil
+	collectgarbage()
+
+	--for _, v in ipairs(raw_tags) do
+	--	Log("start: " .. tostring(v.start_time/1000000))
+	--	Log("end: " .. tostring(v.end_time/1000000))
+	--	Log("description: " .. tostring(categories[v.category].description))
+	--end
+
+	return raw_tags
+end
+
+function line_to_tag(line)
+	line = string.gsub(line," ","")
+	local times, category = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
+	local start_string, end_string = string.match(times,"([^-]+)-([^-]+)")
+	category = tonumber(category)
+	local action = categories[category].action
+	return create_tag(hms_ms_to_us(start_string), hms_ms_to_us(end_string), category, action)
+end
+
+function create_tag(start_time, end_time, category, action)
+	local tag = {}
+	tag.start_time = start_time
+	tag.end_time = end_time
+	tag.category = category
+	tag.action = action
+	return tag
+end
+
+function process_open_tag(processed_tags, open_tag, tag)
+	if open_tag.end_time < tag.start_time then ---if not colliding: insert open_tag
+		table.insert(processed_tags, open_tag)
+		return nil
+	else --if colliding:
+		open_tag_end = open_tag.end_time --keep original open_tag end_time
+		open_tag.end_time = tag.start_time -- cut open_tag short
+		table.insert(processed_tags, open_tag)
+
+		if open_tag_end > tag.end_time then -- if there is a remainder of open_tag after current tag keep it
+			if tag.action ~= open_tag.action then --open_tag.action is MUTE or HIDE
+				tag.action = SKIP --skip if action is skip or is different than open_tag action
+			end
+			return create_tag(tag.end_time, open_tag_end, open_tag.category, open_tag.action) --remainder tag
+		else --open_tag partly collides with current tag
+			if tag.action ~= SKIP and tag.action ~= open_tag.action then
+				local collision_tag = create_tag(tag.start_time, open_tag_end, tag.category, SKIP) --should be tag.category and open_tag.category
+				table.insert(processed_tags, collision_tag)
+				processed_tags.prev_skip_to = collision_tag.end_time
+				tag.start_time = open_tag_end
+			end
+			return nil
+		end
+	end
+end
+
+function process_colliding_tags(raw_tags)
+	processed_tags = {}
+	processed_tags.prev_skip_to = 0
+	open_tag = nil
+	Log("start process")
+	for _, tag in ipairs(raw_tags) do
+		if tag.action ~= SHOW and tag.end_time > processed_tags.prev_skip_to then -- only include tags to skip, mute or hide that won't be entirely skipped by previous tag
+			if open_tag ~= nil then
+				open_tag = process_open_tag(processed_tags, open_tag, tag)
+			end
+			tag.start_time = math.max(tag.start_time, processed_tags.prev_skip_to)
+			--tag = create_tag(start_time, raw_tag.end_time, raw_tag.category, action)
+			if action == SKIP then
+				table.insert(processed_tags, tag)
+				processed_tags.prev_skip_to = tag.end_time
+			else -- action == MUTE or HIDE
+				if open_tag == nil or tag.end_time > open_tag.end_time then
+					open_tag = tag
 				end
 			end
 		end
 	end
 	if open_tag ~= nil then
-		table.insert(cfg.tags, open_tag)
+		table.insert(processed_tags, open_tag)
 	end
+	Log("end process")
+	return processed_tags
+end
 
-	io.close(cnsr_file)
-	for i, v in ipairs(cfg.tags) do
+function load_and_process_tags()
+	Log("load")
+	raw_tags = load_raw_tags_from_file()
+	if raw_tags == nil then
+		return
+	end
+	Log("loaded")
+	cfg.tags = process_colliding_tags(raw_tags)
+
+	for _, v in ipairs(cfg.tags) do
 		Log("start: " .. tostring(v.start_time/1000000))
 		Log("end: " .. tostring(v.end_time/1000000))
 		Log("description: " .. tostring(categories[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	cnsr_file = nil
-	collectgarbage()
 	Set_config(cfg, "CNSR")
 end
 
@@ -265,7 +300,7 @@ end
 
 
 function input_changed()
-	load_cnsr_file()
+	load_and_process_tags()
 end
 
 
@@ -359,8 +394,4 @@ end
 
 	--Investigate saving/loading configurations to/from a file.
 
-	--Add mute support.
-
 	--Lua README titles to explore: "Objects" (player, libvlc, vout), "Renderer discovery"
-
-	--Fix readme
