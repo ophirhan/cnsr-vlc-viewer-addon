@@ -28,7 +28,7 @@ Linux (current user): ~/.local/share/vlc/lua
 
 Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
 
-Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua Create directory if it does not exist!
+Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua
 
 (create the directory if it does not exist!)
 
