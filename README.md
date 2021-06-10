@@ -14,19 +14,27 @@ ________________________________________________________________________________
 
 # Getting started
 
-1) download the these files: cnsr_ext.lua, cnsr_intf.lua. 
-2) "cnsr_ext.lua" > Copy the VLC Extension Lua script file into \lua\extensions\ folder;
-3) "cnsr_intf.lua" > Copy the VLC Interface Lua script file into \lua\intf\ folder;
-4) Start the Extension in VLC menu "View > cnsr" on Windows/Linux or "Vlc > Extensions > cnsr" on Mac and configure the cnsr categories to your liking.
+1. if you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
+2. download these files: [cnsr_ext.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua), [cnsr_intf.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua).
+3. access lua folder using these paths:
 
-**INSTALLATION directory (\lua):**
-* Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua
-* Windows (current user): %APPDATA%\VLC\lua
-* Linux (all users): /usr/lib/vlc/lua
-* Linux (current user): ~/.local/share/vlc/lua
-* Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
-* Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua
-Create directory if it does not exist!
+Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua
+
+Windows (current user): %APPDATA%\VLC\lua
+
+Linux (all users): /usr/lib/vlc/lua
+
+Linux (current user): ~/.local/share/vlc/lua
+
+Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
+
+Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua
+
+(create the directory if it does not exist!)
+
+3. move "cnsr_ext.lua" file into \lua\extensions\ folder.
+4. move "cnsr_intf.lua" file into \lua\intf\ folder.
+5. Start the Extension in VLC menu "View > cnsr" on Windows/Linux or "Vlc > Extensions > cnsr" on Mac and configure the cnsr categories to your liking.
 
 # For developers
 
