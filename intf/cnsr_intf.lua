@@ -7,9 +7,9 @@ SKIP = 2
 MUTE = 3
 HIDE = 4
 FRAME_INTERVAL = 30000
-SKIP_SAFTEY = 10000
+SKIP_SAFETY = 10000
 MINIMUM_DISPLAY_TIME = 2000000
---MINIMUM_DISPLAY_TIME = 0
+GET_CONFIG_INTERVAL = 500
 
 
 DESCRIPTIONS = { [1] = "violence",
@@ -22,61 +22,72 @@ tags = {}
 tag_index = 1
 current_time = 0
 prev_time = 0
+loop_counter = 0
 reverse = false
+done = false
 
-mute = {}
-mute.start_time = 0
-mute.end_time = 0
-mute.activated = false
-mute.prev_volume = vlc.volume.get()
+mute_params = {}
+mute_params.start_time = 0
+mute_params.end_time = 0
+mute_params.activated = false
+mute_params.prev_volume = vlc.volume.get()
+mute_params.action_word = "muted"
 
-hide = {}
-hide.start_time = 0
-hide.end_time = 0
-hide.activated = false
+function mute()
+	mute_params.prev_volume = vlc.volume.get()
+	vlc.volume.set(0)
+end
 
+mute_params.activate = mute
 
+hide_params = {}
+hide_params.start_time = 0
+hide_params.end_time = 0
+hide_params.activated = false
+hide_params.action_word = "hidden"
+
+function hide()
+	hide_filter = vlc.object.vout()
+	vlc.var.create(hide_filter, "contrast", 0)
+	vlc.var.set(hide_filter, "video-filter", "adjust")
+end
+
+hide_params.activate = hide
 
 
 
 function Looper()
 	next_loop_time = vlc.misc.mdate()
 	while true do
-
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
-		Get_config()
-		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags and #config.CNSR.tags ~= 0 then -- no input or stopped input
+		if loop_counter == 0 then
+			Get_config() -- We don't want to call it more then we have to.
+			Log("got config")
+		end
+		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
+		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags and #config.CNSR.tags ~= 0 then
 			tags = config.CNSR.tags
 
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
-			check_disable_actions(current_time)
+			check_disable_actions()
 			reverse = prev_time > current_time
 			tag = get_current_tag()
 
-			if (current_time > tag.start_time and current_time < tag.end_time) then -- maybe add slider leading to skip?
-				if tag.action == SKIP then
-					skip(tag.start_time, tag.end_time)
-					--vlc.osd.message("skipped " .. CATEGORIES[tag.category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
-					display_reason("skipped", tag.category, tag.end_time)
-				elseif tag.action == MUTE then
-					execute_tag(tag, mute)
-					--vlc.osd.message("muted " .. CATEGORIES[tag.category], nil, "bottom-right")
-					display_reason("muted", tag.category, tag.end_time)
-
-				elseif tag.action == HIDE then
-					execute_tag(tag, hide)
-					--vlc.osd.message("hidden " .. CATEGORIES[tag.category], nil, "bottom-right")
-					display_reason("hidden", tag.category, tag.end_time)
+			while not done and current_time > tag.start_time do
+				if current_time < tag.end_time and tag.action ~= SHOW then
+					execute_tag(tag)
 				end
-				if tag_index < #tags then
+				done = tag_index == #tags
+				if not done then
 					tag_index = tag_index + 1
+					tag = tags[tag_index]
 				end
 			end
 			prev_time = current_time
 		end
 		next_loop_time = next_loop_time + FRAME_INTERVAL
-		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(config.CNSR.input, "framerate")?
+		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(input, "fps")?
 	end
 end
 
@@ -86,40 +97,45 @@ function display_reason(reason_string, category, tag_end)
 	end
 end
 
-function check_disable_actions(current_time)
-	if mute.activated and (current_time > mute.end_time or current_time < mute.start_time) then
-		vlc.volume.set(mute.prev_volume)
-		mute.activated = false
+function check_disable_actions()
+	if mute_params.activated and (current_time > mute_params.end_time or current_time < mute_params.start_time) then
+		vlc.volume.set(mute_params.prev_volume)
+		mute_params.activated = false
 	end
 
-	if hide.activated and (current_time > hide.end_time or current_time < hide.start_time) then
-		vlc.var.set(o, "video-filter", "")
-		hide.activated = false
+	if hide_params.activated and (current_time > hide_params.end_time or current_time < hide_params.start_time) then
+		vlc.var.set(hide_filter, "video-filter", "")
+		hide_params.activated = false
 	end
 end
 
 function skip(skip_start, skip_end)
-	--local time_delta = current_time - prev_time
 	if not reverse then
-		vlc.var.set(input,"time", skip_end + SKIP_SAFTEY)
+		current_time = skip_end + SKIP_SAFETY
 	else -- we went back in time, cut the duration of skip tag from timeline
 		skip_length = skip_end - skip_start
-		vlc.var.set(input,"time", math.max(current_time - skip_length, 0))
+		current_time = math.max(current_time - skip_length, 0)
 	end
+	vlc.var.set(input,"time", current_time)
 end
 
 function get_current_tag()
 	--[[
-     relevant_tags = #[tag where (current_time < tag.end_time) in tags]
-     relevant_tags_after_index = (#config.CNSR.tags - tag_index)
-     while relevant_tags_after_index < relevant_tags do
-         tag_index = tag_index - 1
-         if tags[tag_index].end_time > current_time then
-                relevant_tags_after_index = relevant_tags_after_index + 1
-            end
-     end--]]
+	if reverse then
+		relevant_tags = #[tag where (current_time < tag.end_time) in tags] -> sort tags by end time once-> binary search starting at tag_index
+		relevant_tags_after_index = (#config.CNSR.tags - tag_index)
+		while relevant_tags_after_index < relevant_tags do
+			tag_index = tag_index - 1
+			if tags[tag_index].end_time > current_time then
+				relevant_tags_after_index = relevant_tags_after_index + 1
+			end
+		end
+		done = false
+	end
+     --]]
 	if reverse then
 		tag_index = 1
+		done = false
 	end
 
 
@@ -129,31 +145,38 @@ function get_current_tag()
 	return tags[tag_index]
 end
 
-function check_collisions()
-	if hide.activated and mute.activated then
-		local skip_end = math.min(mute.end_time, hide.end_time)
-		local skip_start = math.max(mute.start_time, hide.start_time)
+function check_collision()
+	if hide_params.activated and mute_params.activated then
+		local skip_end = math.min(mute_params.end_time, hide_params.end_time)
+		local skip_start = math.max(mute_params.start_time, hide_params.start_time)
 		skip(skip_start, skip_end)
 	end
 end
 
-function execute_tag(tag, action_params)
+function execute_tag(tag)
 
-	if not action_params.activated then
-		action_params.start_time = tag.start_time
-		action_params.end_time = tag.end_time
-		action_params.activated = true
-		if tag.action == MUTE then
-			hide.prev_volume = vlc.volume.get()
-			vlc.volume.set(0)
-		elseif tag.action == HIDE then
-			o = vlc.object.vout()
-			vlc.var.create(o, "contrast", 0)
-			vlc.var.set(o, "video-filter", "adjust")
-		end
-		check_collisions()
+	if tag.action == SKIP then
+		skip(tag.start_time, tag.end_time)
+		display_reason("skipped", tag.category, tag.end_time) --add how many seconds were skipped?
 	else
-		action_params.end_time = math.max(action_params.end_time, tag.end_time)
+		if tag.action == MUTE then
+			action_params = mute_params
+		elseif tag.action == HIDE then
+			action_params = hide_params
+		else
+			vlc.msg.err("unknown action")
+		end
+
+		if not action_params.activated then
+			action_params.start_time = tag.start_time
+			action_params.end_time = tag.end_time
+			action_params.activated = true
+			action_params.activate()
+			check_collision()
+		else
+			action_params.end_time = math.max(action_params.end_time, tag.end_time)
+		end
+		display_reason(action_params.action_word, tag.category, tag.end_time)
 	end
 end
 
