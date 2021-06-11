@@ -1,31 +1,3 @@
---[[----------------------------------------
-"cnsr_ext.lua" > Put this VLC Extension Lua script file in \lua\extensions\ folder
---------------------------------------------
-Requires "cnsr_intf.lua" > Put the VLC Interface Lua script file in \lua\intf\ folder
-
-Simple instructions:
-1) "cnsr_ext.lua" > Copy the VLC Extension Lua script file into \lua\extensions\ folder;
-2) "cnsr_intf.lua" > Copy the VLC Interface Lua script file into \lua\intf\ folder;
-3) Start the Extension in VLC menu "View > Time v3.x (intf)" on Windows/Linux or "Vlc > Extensions > Time v3.x (intf)" on Mac and configure the Time interface to your liking.
-
-Alternative activation of the Interface script:
-* The Interface script can be activated from the CLI (batch script or desktop shortcut icon):
-vlc.exe --extraintf=luaintf --lua-intf=cnsr_intf
-* VLC preferences for automatic activation of the Interface script:
-Tools > Preferences > Show settings=All > Interface >
-> Main interfaces: Extra interface modules [luaintf]
-> Main interfaces > Lua: Lua interface [cnsr_intf]
-
-INSTALLATION directory (\lua\extensions\):
-* Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua\extensions\
-* Windows (current user): %APPDATA%\VLC\lua\extensions\
-* Linux (all users): /usr/lib/vlc/lua/extensions/
-* Linux (current user): ~/.local/share/vlc/lua/extensions/
-* Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua/extensions/
-* Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua/extensions/
-Create directory if it does not exist!
---]]----------------------------------------
-
 config={}
 cfg={}
 dropdowns = {}
@@ -74,7 +46,7 @@ function trigger_menu(dlg_id)
 		show_category_selection()
 	elseif dlg_id == 2 then
 		if dlg then dlg:delete() end
-		load_and_process_tags()
+		load_and_set_tags()
 	elseif dlg_id==3 then -- Settings
 		if dlg then dlg:delete() end
 		create_dialog_S() --configure inteface script to start when VLC starts
@@ -106,7 +78,7 @@ function click_play()
 	end
 	Log("click play")
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
-	load_and_process_tags()
+	load_and_set_tags()
 end
 
 function get_cnsr_uri()
@@ -120,7 +92,7 @@ function get_cnsr_uri()
 	return uri_sans_extension .. "cnsr"
 end
 
-function load_raw_tags_from_file()
+function load_tags_from_file()
 	local cnsr_uri = get_cnsr_uri()
 	if cnsr_uri == nil then
 		return nil
@@ -140,12 +112,6 @@ function load_raw_tags_from_file()
 	cnsr_file = nil
 	collectgarbage()
 
-	--for _, v in ipairs(raw_tags) do
-	--	Log("start: " .. tostring(v.start_time/1000000))
-	--	Log("end: " .. tostring(v.end_time/1000000))
-	--	Log("description: " .. tostring(categories[v.category].description))
-	--end
-
 	return raw_tags
 end
 
@@ -155,81 +121,23 @@ function line_to_tag(line)
 	local start_string, end_string = string.match(times,"([^-]+)-([^-]+)")
 	category = tonumber(category)
 	local action = categories[category].action
-	return create_tag(hms_ms_to_us(start_string), hms_ms_to_us(end_string), category, action)
-end
-
-function create_tag(start_time, end_time, category, action)
 	local tag = {}
-	tag.start_time = start_time
-	tag.end_time = end_time
+	tag.start_time = hms_ms_to_us(start_string)
+	tag.end_time = hms_ms_to_us(end_string)
 	tag.category = category
 	tag.action = action
 	return tag
 end
 
-function process_open_tag(processed_tags, open_tag, tag)
-	if open_tag.end_time < tag.start_time then ---if not colliding: insert open_tag
-		table.insert(processed_tags, open_tag)
-		return nil
-	else --if colliding:
-		open_tag_end = open_tag.end_time --keep original open_tag end_time
-		open_tag.end_time = tag.start_time -- cut open_tag short
-		table.insert(processed_tags, open_tag)
-
-		if open_tag_end > tag.end_time then -- if there is a remainder of open_tag after current tag keep it
-			if tag.action ~= open_tag.action then --open_tag.action is MUTE or HIDE
-				tag.action = SKIP --skip if action is skip or is different than open_tag action
-			end
-			return create_tag(tag.end_time, open_tag_end, open_tag.category, open_tag.action) --remainder tag
-		else --open_tag partly collides with current tag
-			if tag.action ~= SKIP and tag.action ~= open_tag.action then
-				local collision_tag = create_tag(tag.start_time, open_tag_end, tag.category, SKIP) --should be tag.category and open_tag.category
-				table.insert(processed_tags, collision_tag)
-				processed_tags.prev_skip_to = collision_tag.end_time
-				tag.start_time = open_tag_end
-			end
-			return nil
-		end
-	end
-end
-
-function process_colliding_tags(raw_tags)
-	processed_tags = {}
-	processed_tags.prev_skip_to = 0
-	open_tag = nil
-	Log("start process")
-	for _, tag in ipairs(raw_tags) do
-		if tag.action ~= SHOW and tag.end_time > processed_tags.prev_skip_to then -- only include tags to skip, mute or hide that won't be entirely skipped by previous tag
-			if open_tag ~= nil then
-				open_tag = process_open_tag(processed_tags, open_tag, tag)
-			end
-			tag.start_time = math.max(tag.start_time, processed_tags.prev_skip_to)
-			--tag = create_tag(start_time, raw_tag.end_time, raw_tag.category, action)
-			if action == SKIP then
-				table.insert(processed_tags, tag)
-				processed_tags.prev_skip_to = tag.end_time
-			else -- action == MUTE or HIDE
-				if open_tag == nil or tag.end_time > open_tag.end_time then
-					open_tag = tag
-				end
-			end
-		end
-	end
-	if open_tag ~= nil then
-		table.insert(processed_tags, open_tag)
-	end
-	Log("end process")
-	return processed_tags
-end
-
-function load_and_process_tags()
+function load_and_set_tags()
 	Log("load")
-	raw_tags = load_raw_tags_from_file()
+	raw_tags = load_tags_from_file()
 	if raw_tags == nil then
 		return
 	end
 	Log("loaded")
-	cfg.tags = process_colliding_tags(raw_tags)
+	cfg.tags = raw_tags
+
 
 	for _, v in ipairs(cfg.tags) do
 		Log("start: " .. tostring(v.start_time/1000000))
@@ -300,7 +208,7 @@ end
 
 
 function input_changed()
-	load_and_process_tags()
+	load_and_set_tags()
 end
 
 
@@ -394,4 +302,4 @@ end
 
 	--Investigate saving/loading configurations to/from a file.
 
-	--Lua README titles to explore: "Objects" (player, libvlc, vout), "Renderer discovery"
+	--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
