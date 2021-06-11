@@ -32,9 +32,9 @@ Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.vide
 
 (create the directory if it does not exist!)
 
-3. move "cnsr_ext.lua" file into \lua\extensions\ folder.
-4. move "cnsr_intf.lua" file into \lua\intf\ folder.
-5. Start the Extension in VLC menu "View > cnsr" on Windows/Linux or "Vlc > Extensions > cnsr" on Mac and configure the cnsr categories to your liking.
+4. move "cnsr_ext.lua" file into \lua\extensions\ folder.
+5. move "cnsr_intf.lua" file into \lua\intf\ folder.
+6. Start the Extension in VLC menu "View > cnsr" on Windows/Linux or "Vlc > Extensions > cnsr" on Mac and configure the cnsr categories to your liking.
 
 # For developers
 
