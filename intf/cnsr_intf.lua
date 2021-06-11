@@ -8,9 +8,11 @@ MUTE = 3
 HIDE = 4
 FRAME_INTERVAL = 30000
 SKIP_SAFTEY = 10000
+MINIMUM_DISPLAY_TIME = 2000000
+--MINIMUM_DISPLAY_TIME = 0
 
 
-CATEGORIES = { [1] = "violence",
+DESCRIPTIONS = { [1] = "violence",
 			   [2] = "verbal abuse",
 			   [3] =  "nudity",
 			   [4] =  "alcohol and drug consumption"}
@@ -20,6 +22,7 @@ tags = {}
 tag_index = 1
 current_time = 0
 prev_time = 0
+reverse = false
 
 mute = {}
 mute.start_time = 0
@@ -47,27 +50,36 @@ function Looper()
 
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
-
 			check_disable_actions(current_time)
+			reverse = prev_time > current_time
 			tag = get_current_tag()
 
 			if (current_time > tag.start_time and current_time < tag.end_time) then -- maybe add slider leading to skip?
 				if tag.action == SKIP then
-					vlc.var.set(input,"time", tag.end_time + SKIP_SAFTEY)
-					vlc.osd.message("skipped " .. CATEGORIES[tag.category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
+					skip(tag.start_time, tag.end_time)
+					--vlc.osd.message("skipped " .. CATEGORIES[tag.category], nil, "bottom-right") --what about collisions? add how many seconds were skipped?
+					display_reason("skipped", tag.category, tag.end_time)
 				elseif tag.action == MUTE then
 					execute_tag(tag, mute)
-					vlc.osd.message("muted " .. CATEGORIES[tag.category], nil, "bottom-right")
+					--vlc.osd.message("muted " .. CATEGORIES[tag.category], nil, "bottom-right")
+					display_reason("muted", tag.category, tag.end_time)
 
 				elseif tag.action == HIDE then
 					execute_tag(tag, hide)
-					vlc.osd.message("hidden " .. CATEGORIES[tag.category], nil, "bottom-right")
+					--vlc.osd.message("hidden " .. CATEGORIES[tag.category], nil, "bottom-right")
+					display_reason("hidden", tag.category, tag.end_time)
 				end
 			end
 			prev_time = current_time
 		end
 		next_loop_time = next_loop_time + FRAME_INTERVAL
 		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(config.CNSR.input, "framerate")?
+	end
+end
+
+function display_reason(reason_string, category, tag_end)
+	if tag_end - current_time > MINIMUM_DISPLAY_TIME and not reverse then
+		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
@@ -83,6 +95,16 @@ function check_disable_actions(current_time)
 	end
 end
 
+function skip(skip_start, skip_end)
+	--local time_delta = current_time - prev_time
+	if not reverse then
+		vlc.var.set(input,"time", skip_end + SKIP_SAFTEY)
+	else -- we went back in time, cut the duration of skip tag from timeline
+		skip_length = skip_end - skip_start
+		vlc.var.set(input,"time", math.max(current_time - skip_length, 0))
+	end
+end
+
 function get_current_tag()
 	--[[
      relevant_tags = #[tag where (current_time < tag.end_time) in tags]
@@ -92,9 +114,8 @@ function get_current_tag()
          if tags[tag_index].end_time > current_time then
                 relevant_tags_after_index = relevant_tags_after_index + 1
             end
-     end
-     --]]
-	if current_time < prev_time then
+     end--]]
+	if reverse then
 		tag_index = 1
 	end
 
