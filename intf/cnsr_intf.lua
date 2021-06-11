@@ -69,6 +69,9 @@ function Looper()
 					--vlc.osd.message("hidden " .. CATEGORIES[tag.category], nil, "bottom-right")
 					display_reason("hidden", tag.category, tag.end_time)
 				end
+				if tag_index < #tags then
+					tag_index = tag_index + 1
+				end
 			end
 			prev_time = current_time
 		end
@@ -129,7 +132,8 @@ end
 function check_collisions()
 	if hide.activated and mute.activated then
 		local skip_end = math.min(mute.end_time, hide.end_time)
-		vlc.var.set(input,"time", skip_end + SKIP_SAFTEY)
+		local skip_start = math.max(mute.start_time, hide.start_time)
+		skip(skip_start, skip_end)
 	end
 end
 
