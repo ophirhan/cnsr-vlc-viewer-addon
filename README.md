@@ -18,19 +18,19 @@ ________________________________________________________________________________
 2. download these files: [cnsr_ext.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua), [cnsr_intf.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua).
 3. access lua folder using these paths:
 
-Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua
+      Windows (all users): %ProgramFiles%\VideoLAN\VLC\lua
 
-Windows (current user): %APPDATA%\VLC\lua
+      Windows (current user): %APPDATA%\VLC\lua
 
-Linux (all users): /usr/lib/vlc/lua
+      Linux (all users): /usr/lib/vlc/lua
 
-Linux (current user): ~/.local/share/vlc/lua
+      Linux (current user): ~/.local/share/vlc/lua
 
-Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
+      Mac OS X (all users): /Applications/VLC.app/Contents/MacOS/share/lua
 
-Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua
+      Mac OS X (current user): /Users/%your_name%/Library/Application Support/org.videolan.vlc/lua
 
-(create the directory if it does not exist!)
+      (create the directory if it does not exist!)
 
 4. move "cnsr_ext.lua" file into \lua\extensions\ folder.
 5. move "cnsr_intf.lua" file into \lua\intf\ folder.
