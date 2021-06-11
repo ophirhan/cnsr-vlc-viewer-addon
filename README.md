@@ -45,3 +45,13 @@ ________________________________________________________________________________
 4. Delete "luab" folder
 
 and thats it! you are ready to start
+
+How to use cnsr files:
+In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'.
+The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
+
+For example, if the video you want to play is:
+c://User/Me/Desktop/myvid.mp4
+Then the cnsr file should be:
+c://User/Me/Desktop/myvid.cnsr
+(currently there is an issue with directoris that have underscore or spaces, so try to avoid them)
