@@ -9,10 +9,10 @@ intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
 local dlg
 
 --add epilepsy category
-categories = {[1] = {description = "violence", action=SKIP},
-			[2] = {description = "verbal abuse", action=SKIP},
-			[3] =  {description = "nudity", action=SKIP},
-			[4] =  {description = "alcohol and drug consumption", action=SKIP}}
+CATEGORIES = { [1] = { description = "violence", action=SKIP},
+			   [2] = {description = "verbal abuse", action=SKIP},
+			   [3] =  {description = "nudity", action=SKIP},
+			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
 -- defaults
 
 function descriptor()
@@ -59,7 +59,7 @@ function show_category_selection()
 	close_dlg()
 	dlg = vlc.dialog("Category selection")
 	local pos = 2
-	for i,v in ipairs(categories) do
+	for i,v in ipairs(CATEGORIES) do
 		dlg:add_label(v.description, 3,pos,3,3)
 		dropdowns[v.description] = dlg:add_dropdown(6,pos,3,3)
 		for j,w in ipairs(options) do
@@ -73,7 +73,7 @@ end
 
 
 function click_play()
-	for i,v in ipairs(categories) do
+	for i,v in ipairs(CATEGORIES) do
 		v.action = dropdowns[v.description]:get_value()
 	end
 	Log("click play")
@@ -120,7 +120,7 @@ function line_to_tag(line)
 	local times, category = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
 	local start_string, end_string = string.match(times,"([^-]+)-([^-]+)")
 	category = tonumber(category)
-	local action = categories[category].action
+	local action = CATEGORIES[category].action
 	local tag = {}
 	tag.start_time = hms_ms_to_us(start_string)
 	tag.end_time = hms_ms_to_us(end_string)
@@ -142,7 +142,7 @@ function load_and_set_tags()
 	for _, v in ipairs(cfg.tags) do
 		Log("start: " .. tostring(v.start_time/1000000))
 		Log("end: " .. tostring(v.end_time/1000000))
-		Log("description: " .. tostring(categories[v.category].description))
+		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
 	Set_config(cfg, "CNSR")
