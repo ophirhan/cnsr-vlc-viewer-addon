@@ -36,7 +36,7 @@ MuteParams = {
 	action_word = "muted"
 }
 
-function MuteParams.mute()
+function MuteParams.activate()
 	MuteParams.prev_volume = vlc.volume.get()
 	vlc.volume.set(0)
 end
@@ -59,7 +59,7 @@ end
 
 -- Main app entry point
 function looper()
-	local next_loop_time
+	local next_loop_time = vlc.misc.mdate()
 	local loop_counter = 0
 	local tags;
 	while true do
@@ -76,11 +76,11 @@ function looper()
 			current_time = vlc.var.get(input,"time")
 			check_disable_actions()
 			reverse = prev_time > current_time
-			local tag = get_current_tag()
+			local tag = get_current_tag(tags)
 
 			while not done and current_time > tag.start_time do
 				if current_time < tag.end_time and tag.action ~= SHOW then
-					execute_tag(tag)
+					execute_tag(tag, input)
 				end
 				done = tag_index == #tags
 				if not done then
@@ -113,7 +113,7 @@ function check_disable_actions()
 	end
 end
 
-function skip(skip_start, skip_end)
+function skip(skip_start, skip_end, input)
 	local current_time = skip_end + SKIP_SAFETY
 	if reverse then -- we went back in time, cut the duration of skip tag from timeline
 		local skip_length = skip_end - skip_start
@@ -149,18 +149,18 @@ function get_current_tag(tags)
 	return tags[tag_index]
 end
 
-function check_collision()
+function check_collision(input)
 	if HideParams.activated and MuteParams.activated then
 		local skip_end = math.min(MuteParams.end_time, HideParams.end_time)
 		local skip_start = math.max(MuteParams.start_time, HideParams.start_time)
-		skip(skip_start, skip_end)
+		skip(skip_start, skip_end, input)
 	end
 end
 
-function execute_tag(tag)
+function execute_tag(tag, input)
 	local action_params
 	if tag.action == SKIP then
-		skip(tag.start_time, tag.end_time)
+		skip(tag.start_time, tag.end_time, input)
 		display_reason("skipped", tag.category, tag.end_time) --add how many seconds were skipped?
 	else
 		if tag.action == MUTE then
@@ -176,7 +176,7 @@ function execute_tag(tag)
 			action_params.end_time = tag.end_time
 			action_params.activated = true
 			action_params.activate()
-			check_collision()
+			check_collision(input)
 		else
 			action_params.end_time = math.max(action_params.end_time, tag.end_time)
 		end
