@@ -8,8 +8,11 @@ VLC plugin for real-time media censorship according to user personal settings,
 using [CNSR file format](https://github.com/ophirhan/cnsr-file-format-specification).
 
 This plugin censors categories like nudity, verbal abuse, violence and alchohol and drug consumption.
+The extension is also available [here](https://addons.videolan.org/p/1537958/).
 
-supports Windows, Linux and Mac OS.
+This extension is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.videolan.org/p/1154032/).
+
+Supported OS: Window, Linux and Mac OS.
 _____________________________________________________________________________________________________
 
 # Getting started
