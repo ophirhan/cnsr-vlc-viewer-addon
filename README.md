@@ -15,8 +15,16 @@ ________________________________________________________________________________
 # Getting started
 
 1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
-2. download these files: [cnsr_ext.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua), [cnsr_intf.lua](https://github.com/ophirhan/cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua).
-3. Access lua folder using these paths:
+2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
+3. Find your way to these two files: 
+-cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua
+-cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua
+			       
+4. Access lua folder using these paths:
+
+*All users path means:*
+*current user paths means:*
+
 - Windows
   - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)
   - `%APPDATA%\VLC\lua` (current user)
@@ -29,6 +37,8 @@ ________________________________________________________________________________
   - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user) 
   
   ** (create the directory if it does not exist!)
+** To find your APPDATA directory if needed:  [Find APPDATA directory](https://www.minitool.com/data-recovery/how-find-appdata-folder.html)
+
 
 4. Move "cnsr_ext.lua" file into \lua\extensions\ folder.
 5. Move "cnsr_intf.lua" file into \lua\intf\ folder.
@@ -47,7 +57,7 @@ ________________________________________________________________________________
 and thats it! you are ready to start
 
 How to use cnsr files:
-In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'.
+In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'. We Have added some comments with explanation regarding the format inside the example file. 
 The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
 
 For example, if the video you want to play is:
