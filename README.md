@@ -12,7 +12,7 @@ The extension is also available [here](https://addons.videolan.org/p/1537958/).
 
 This extension is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.videolan.org/p/1154032/).
 
-Supported OS: Window, Linux and Mac OS.
+Supported OS: Windows, Linux and Mac OS.
 _____________________________________________________________________________________________________
 
 # Getting started
