@@ -8,6 +8,9 @@ VLC plugin for real-time media censorship according to user personal settings,
 using [CNSR file format](https://github.com/ophirhan/cnsr-file-format-specification).
 
 This plugin censors categories like nudity, verbal abuse, violence and alchohol and drug consumption.
+The extension is also availble [here](https://addons.videolan.org/p/1537958/)
+
+The extension is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.videolan.org/p/1154032/)
 
 supports Windows, Linux and Mac OS.
 _____________________________________________________________________________________________________
@@ -22,8 +25,8 @@ ________________________________________________________________________________
 			       
 4. Access lua folder using these paths:
 
-*All users path means:*
-*current user paths means:*
+If you want the extension to be available for all the users of the 
+computer and not only the user currently logged in choose the all users path.
 
 - Windows
   - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)
@@ -57,11 +60,10 @@ ________________________________________________________________________________
 and thats it! you are ready to start
 
 How to use cnsr files:
-In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'. We Have added some comments with explanation regarding the format inside the example file. 
+In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'. 
 The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
 
 For example, if the video you want to play is:
 c://User/Me/Desktop/myvid.mp4
 Then the cnsr file should be:
 c://User/Me/Desktop/myvid.cnsr
-(currently there is an issue with directoris that have underscore or spaces, so try to avoid them)
