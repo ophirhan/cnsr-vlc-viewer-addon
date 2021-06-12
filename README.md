@@ -8,11 +8,11 @@ VLC plugin for real-time media censorship according to user personal settings,
 using [CNSR file format](https://github.com/ophirhan/cnsr-file-format-specification).
 
 This plugin censors categories like nudity, verbal abuse, violence and alchohol and drug consumption.
-The extension is also availble [here](https://addons.videolan.org/p/1537958/)
+The extension is also available [here](https://addons.videolan.org/p/1537958/).
 
-The extension is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.videolan.org/p/1154032/)
+This extension is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.videolan.org/p/1154032/).
 
-supports Windows, Linux and Mac OS.
+Supported OS: Windows, Linux and Mac OS.
 _____________________________________________________________________________________________________
 
 # Getting started
@@ -28,43 +28,44 @@ ________________________________________________________________________________
 
 If you want the extension to be available for all the users of the 
 computer and not only the user currently logged in choose the all users path.
-
-- Windows
-  - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)
-  - `%APPDATA%\VLC\lua` (current user)
-- Linux
-  - `/usr/lib/vlc/lua` (all users)
-  - `~/.local/share/vlc/lua` (current user)
-
-- Mac OS X
-  - `/Applications/VLC.app/Contents/MacOS/share/lua` (current user)
-  - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user) 
+    - Windows
+        - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)
+        - `%APPDATA%\VLC\lua` (current user)
+    - Linux
+        - `/usr/lib/vlc/lua` (all users)
+        - `~/.local/share/vlc/lua` (current user)
+    - Mac OS
+        - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)
+        - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user) 
   
-  ** (create the directory if it does not exist!)
-** To find your APPDATA directory if needed:  [Find APPDATA directory](https://www.minitool.com/data-recovery/how-find-appdata-folder.html)
-
-
-4. Move "cnsr_ext.lua" file into \lua\extensions\ folder.
-5. Move "cnsr_intf.lua" file into \lua\intf\ folder.
-6. Start the Extension in VLC menu "View > cnsr" on Windows/Linux or "Vlc > Extensions > cnsr" on Mac and configure the cnsr categories to your liking.
+4. Move `cnsr_ext.lua` to \lua\extensions\ folder.
+5. Move `cnsr_intf.lua` to \lua\intf\ folder.
+6. Start the Extension in VLC menu
+    - `View > cnsr` for Windows/Linux.
+    - `VLC > Extensions > cnsr` for Mac OS.
+7. Configure the cnsr categories to your liking.
 
 # For developers
 
-1. Change the lua folder's name to "luab".
+1. Change the lua folder's name to `luab`.
 
-2. Clone the repository a new folder named "lua"
+2. Clone the repository a new folder named `lua`
 
-3. Copy the contents of "luab" to "lua"
+3. Copy the contents of `luab` dir to `lua` dir
 
-4. Delete "luab" folder
+4. Delete `luab` dir
 
-and thats it! you are ready to start
+and that's it! you are ready to start.
 
-How to use cnsr files:
-In order to make use of cnsr file you need to create a new file with the format as shown in 'example/example_file.cnsr'. 
+# How to use cnsr files:
+In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.
 The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
 
-For example, if the video you want to play is:
-c://User/Me/Desktop/myvid.mp4
-Then the cnsr file should be:
-c://User/Me/Desktop/myvid.cnsr
+For example, if the video you want to play is: <br>
+`/foo/bar/myvid.mp4` <br>
+Then the cnsr file should be: <br>
+`/foo/bar/myvid.cnsr` <br>
+
+#NOTICE
+- Currently there is an issue with directoris that have underscore or spaces, so please try to avoid them
+
