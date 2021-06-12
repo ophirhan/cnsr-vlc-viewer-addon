@@ -26,24 +26,24 @@ ________________________________________________________________________________
 			       
 4. Access lua folder using these paths:
 
-If you want the extension to be available for all the users of the 
-computer and not only the user currently logged in choose the all users path.
-    - Windows
-        - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)
-        - `%APPDATA%\VLC\lua` (current user)
-    - Linux
-        - `/usr/lib/vlc/lua` (all users)
-        - `~/.local/share/vlc/lua` (current user)
-    - Mac OS
-        - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)
-        - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user) 
+    If you want the extension to be available for all the users of the 
+    computer and not only the user currently logged in choose the all users path.<br/>
+        - Windows<br/>
+            - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)<br/>
+            - `%APPDATA%\VLC\lua` (current user)<br/>
+        - Linux<br/>
+            - `/usr/lib/vlc/lua` (all users)<br/>
+            - `~/.local/share/vlc/lua` (current user)<br/>
+        - Mac OS<br/>
+            - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)<br/>
+            - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua (current user)<br/>
   
-4. Move `cnsr_ext.lua` to \lua\extensions\ folder.
-5. Move `cnsr_intf.lua` to \lua\intf\ folder.
-6. Start the Extension in VLC menu
+5. Move `cnsr_ext.lua` to \lua\extensions\ folder.
+6. Move `cnsr_intf.lua` to \lua\intf\ folder.
+7. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
-7. Configure the cnsr categories to your liking.
+8. Configure the cnsr categories to your liking.
 
 # For developers
 
@@ -58,7 +58,19 @@ computer and not only the user currently logged in choose the all users path.
 and that's it! you are ready to start.
 
 # How to use cnsr files:
-In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.
+NOTE: At this point, The cnsr file is not created automatically or by itself.<br/>
+ the user has to watch the video file and decide on the appropriate tags by himself and enter the relevant timestamps.<br/>
+
+Possible tags:<br/>
+1 for violence<br/>
+2 for verbal violence<br/>
+3 for nudity<br/>
+4 for alcohol and drug use<br/>
+
+You can see a cnsr file in the exsample folder<br/>
+- Explanation of the timestamps displayed: hours:minutes:seconds,millis
+
+In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.<br/>
 The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
 
 For example, if the video you want to play is: <br>
