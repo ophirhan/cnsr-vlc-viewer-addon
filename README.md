@@ -19,6 +19,7 @@ ________________________________________________________________________________
 
 1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
+![Screenshot_061221_040915_PM](https://user-images.githubusercontent.com/19567966/121777049-c8d80580-cb98-11eb-9ac7-6db63a0c518f.jpg)
 3. Find your way to these two files: 
 -cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua
 -cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua
