@@ -195,4 +195,4 @@ function get_config()
 end
 
 
-looper() --starter
+looper() -- starter
