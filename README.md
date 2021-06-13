@@ -35,8 +35,8 @@ ________________________________________________________________________________
             - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)<br/>
             - `%APPDATA%\VLC\lua` (current user)<br/>
             - If The commands above did not work, go to `%ProgramFiles%\VideoLAN\VLC` or `%APPDATA%\VLC` folder(according to your choice to which user to install). 
-	    this can be done by getting to the run pannel(Windows + R, or search run in the windows search bar) and type `%ProgramFiles%\VideoLAN\VLC` 
-	    or `%APPDATA%\VLC`(according to your choice). Create a folder named "lua" and inside this folder create 2 folders named "extensions" and "intf".<br/>
+	      this can be done by getting to the run pannel(Windows + R, or search run in the windows search bar) and type `%ProgramFiles%\VideoLAN\VLC` 
+	      or `%APPDATA%\VLC`(according to your choice). Create a folder named "lua" and inside this folder create 2 folders named "extensions" and "intf".<br/>
         - Linux<br/>
             - `/usr/lib/vlc/lua` (all users)<br/>
             - `~/.local/share/vlc/lua` (current user)<br/>
