@@ -2,7 +2,7 @@
 
 **An add-on for VLC media player.**
 
-[![License](https://img.shields.io/badge/License-GPL3-red.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-GPL3-red.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 
 
 # Description
