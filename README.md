@@ -31,16 +31,16 @@ ________________________________________________________________________________
 
     If you want the extension to be available for all the users of the 
     computer and not only the user currently logged in choose the all users path.<br/>
-        - Windows<br/>
+        - Windows<br/><br/>
             - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)<br/>
             - `%APPDATA%\VLC\lua` (current user)<br/>
             - If The commands above did not work, go to `%ProgramFiles%\VideoLAN\VLC` or `%APPDATA%\VLC` folder(according to your choice to which user to install). 
 	      this can be done by getting to the run pannel(Windows + R, or search run in the windows search bar) and type `%ProgramFiles%\VideoLAN\VLC` 
 	      or `%APPDATA%\VLC`(according to your choice). Create a folder named "lua" and inside this folder create 2 folders named "extensions" and "intf".<br/>
-        - Linux<br/>
+        - Linux<br/><br/>
             - `/usr/lib/vlc/lua` (all users)<br/>
             - `~/.local/share/vlc/lua` (current user)<br/>
-        - Mac OS<br/>
+        - Mac OS<br/><br/>
             - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)<br/>
             - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user)<br/>
 
