@@ -30,7 +30,7 @@ ________________________________________________________________________________
 4. Access lua folder using these paths:
 
     If you want the extension to be available for all the users of the 
-    computer and not only the user currently logged in choose the all users path.<br/><br/>
+    computer and not only the user currently logged in choose the all users path.<br/>
         - Windows<br/>
             - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)<br/>
             - `%APPDATA%\VLC\lua` (current user)<br/>
