@@ -58,11 +58,7 @@ ________________________________________________________________________________
 
 4. Delete `luab` dir
 
-and that's it! you are ready to start.<br/>
-To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).<br/>
-Also if you're just getting started with lua here are some important things that set it apart from other programming languages:<br/>
-tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
-[This tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running with lua in little to no time.<br/>
+and that's it! you are ready to start.
 
 # How to use cnsr files:
 NOTE: At this point, The cnsr file is not created automatically or by itself.<br/>
@@ -87,4 +83,8 @@ Then the cnsr file should be: <br>
 
 #NOTICE
 - Currently there is an issue with directoris that have underscore or spaces, so please try to avoid them
+
+# Founders
+
+[Eyal Ben Tovim](https://github.com/eyal1889) [Ophir Han](https://github.com/ophirhan) [Eldar Lerner](https://github.com/eldarlerner)
 
