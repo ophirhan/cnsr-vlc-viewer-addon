@@ -2,6 +2,9 @@
 
 **An add-on for VLC media player.**
 
+[![License](https://img.shields.io/badge/License-GPL3-red.svg)](https://opensource.org/licenses/Apache-2.0)
+
+
 # Description
 
 VLC plugin for real-time media censorship according to user personal settings,
@@ -67,7 +70,7 @@ Possible tags:<br/>
 3 for nudity<br/>
 4 for alcohol and drug use<br/>
 
-You can see a cnsr file in the exsample folder<br/>
+You can see an example of a cnsr file [here](https://github.com/ophirhan/cnsr-vlc-viewer-addon/tree/main/example)<br/>
 - Explanation of the timestamps displayed: hours:minutes:seconds,millis
 
 In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.<br/>
