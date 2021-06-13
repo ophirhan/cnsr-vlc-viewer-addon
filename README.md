@@ -40,6 +40,8 @@ ________________________________________________________________________________
         - Linux<br/>
             - `/usr/lib/vlc/lua` (all users)<br/>
             - `~/.local/share/vlc/lua` (current user)<br/>
+            - If The commands above did not work, go to `/usr/lib/vlc` or `~/.local/share/vlc` folder(according to your choice to which user to install). 
+	    this can be done by typing `cd /usr/lib/vlc` or `cd ~/.local/share/vlc`. Create a folder named "lua" and inside this folder create 2 folders named "extensions" and 	    "intf".<br/><br/>
         - Mac OS<br/>
             - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)<br/>
             - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua` (current user)<br/>
