@@ -14,7 +14,7 @@ Supported OS: Windows, Linux and Mac OS.
 
 ## Installing the add-on for regular use
 
-1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
+1. If you don't have VLC installed on your computer, install it now from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
 ![Screenshot_061221_040915_PM](https://user-images.githubusercontent.com/19567966/121777049-c8d80580-cb98-11eb-9ac7-6db63a0c518f.jpg)
 			       
@@ -30,7 +30,7 @@ Supported OS: Windows, Linux and Mac OS.
    - Linux- `~/.local/share/vlc/lua`<br/>
    - MacOS- `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
   
-4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file to the `lua` folder.
+4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file into the `lua` folder.
 5. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
