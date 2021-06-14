@@ -10,7 +10,9 @@ This add-on is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.v
 
 Supported OS: Windows, Linux and Mac OS.
 
-# Installing the add-on for regular use
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+## Installing the add-on for regular use
 
 1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
@@ -45,21 +47,22 @@ Supported OS: Windows, Linux and Mac OS.
     - `VLC > Extensions > cnsr` for Mac OS.
 9. Configure the cnsr categories to your liking.
 
-### How to use cnsr files:
-The cnsr file is not created automatically or by itself.<br/>
-the user has to watch the video file and decide on the appropriate tags by himself and enter the relevant time-stamps.<br/>
+### How to use CNSR files:
+CNSR files are not created automatically, they must be downloaded or created manually<br/>
+(in the future a [tagging tool](https://github.com/ophirhan/cnsr-tagging-tool) will be available) 
+by watching the video and writing tags with time-stamps.<br/>
 
 Possible tags:<br/>
-1 for violence<br/>
-2 for verbal abuse<br/>
-3 for nudity<br/>
-4 for alcohol and drug use<br/>
+1. for violence<br/>
+2. for verbal abuse<br/>
+3. for nudity<br/>
+4. for alcohol and drug use<br/>
 
-You can see an example of a cnsr file [here](https://github.com/ophirhan/cnsr-vlc-viewer-addon/tree/main/example)<br/>
+You can see an example of a cnsr file [here](https://github.com/ophirhan/cnsr-vlc-viewer-addon/tree/main/example)<br/>)
 - Explanation of the timestamps displayed: hours:minutes:seconds,millis
 
 In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.<br/>
-The file name must be identical to the video name you want to play (except for the ending), and must be at the same directory as the video.
+The file name must be identical to the video name you want to play (except for the file type), and must be at the same directory as the video.
 
 For example, if the video you want to play is: <br>
 `/foo/bar/myvid.mp4` <br>
@@ -71,6 +74,8 @@ Then the cnsr file should be: <br>
 
 
 # Setting up the project for development
+To work conveniently with git, we recommend cloning the project in your exsisting lua folder.<br/>
+Since git doesn't allow to clone a project into an existing folder, we reccomend following these steps:
 
 1. If you don't have VLC installed on your computer, install from [VLC](https://www.videolan.org/)
 
@@ -90,10 +95,10 @@ Then the cnsr file should be: <br>
 And that's it! the add-on is installed, and you are ready to start developing.<br/>
 
 ##Tips for developers
-To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).<br/>
-When debbuging in order to see the log messages you need to open the VLC console via:<br/>
-View > Add interface > Console.<br/>
-Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
+- To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).
+- When debbuging in order to see the log messages you need to open the VLC console via:<br/>
+`View > Add interface > Console`<br/>
+- Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
 in order to save your changes you might need to open your IDE as an administartor.<br/>
 ### Getting started with lua
 If you're just getting started with lua here are some important things that set it apart from other programming languages:<br/>
