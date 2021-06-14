@@ -29,6 +29,8 @@ Supported OS: Windows, Linux and Mac OS.
    - Windows- `%APPDATA%\VLC\lua`<br/>
    - Linux- `~/.local/share/vlc/lua`<br/>
    - MacOS- `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
+   If the paths above don't exist and you already have VLC installed on your computer try to uninstall it and then reinstall it. 
+   Then, make sure you are using the most updated version of VLC.
   
 4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file to the `lua` folder.
 5. Start the Extension in VLC menu
