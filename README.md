@@ -1,5 +1,7 @@
 # CNSR vlc viewer add-on
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 VLC add-on for real-time media censorship according to user personal settings,
 using [CNSR file format](https://github.com/ophirhan/cnsr-file-format-specification).
 
@@ -40,11 +42,13 @@ Supported OS: Windows, Linux and Mac OS.
     - `VLC > Extensions > cnsr` for Mac OS.
 8. Configure the cnsr categories to your liking.
 
-# Setting up the project for the development
+# Setting up the project for development
+To work conveniently with git, we reccomend cloning the project in your exsisting lua folder.<br/>
+Since git doesn't allow to clone a project into an existing folder, we reccomend following these steps:
 
-1. Change the lua folder's name to `luaOld`.
+1. Change the current lua folder's name to `luaOld`.
 
-2. Clone the repository a new folder named `lua`
+2. Clone the project's repository to a new folder named `lua`
 
 3. Copy the contents of `luaOld` dir to `lua` dir
 
