@@ -102,6 +102,14 @@ If you're just getting started with lua, here are some important things that set
 
 For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
 
+### How To Contribute?
+
+Changing and pushing to the main branch is not possible, in order to contribute to our code you'll need to:
+
+1. Fork this repo.
+2. Work on a new local branch.
+3. Push the changes from the local branch to github.
+4. Create a new pull request (to merge the changes from you branch to our main branch), and wait for it's approval.
 
 # Founders
 
