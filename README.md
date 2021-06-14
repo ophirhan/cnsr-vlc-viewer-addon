@@ -20,21 +20,15 @@ Supported OS: Windows, Linux and Mac OS.
 			       
 3. If you want the add-on to be available for all the users of the 
     computer, access the `lua` folder using these paths:
-   - Windows<br/>
-   - `%ProgramFiles%\VideoLAN\VLC\lua`<br/>
-   - Linux<br/>
-   - `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
-   - Mac OS<br/>
-   - `/Applications/VLC.app/Contents/MacOS/share/lua`<br/>
+   - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>
+   - Linux- `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
+   - MacOS- `/Applications/VLC.app/Contents/MacOS/share/lua`<br/>
      <br/>
-     If you want the add-on to be available only for a specific user,
-     access the `lua` folder using these paths:
-   - Windows<br/>
-   - `%APPDATA%\VLC\lua`<br/>
-   - Linux<br/>
-   - `~/.local/share/vlc/lua`<br/>
-   - Mac OS<br/>
-   - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
+   If you want the add-on to be available only for a specific user,
+   access the `lua` folder using these paths:
+   - Windows- `%APPDATA%\VLC\lua`<br/>
+   - Linux- `~/.local/share/vlc/lua`<br/>
+   - MacOS- `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
   
 4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file to the `lua` folder.
 5. Start the Extension in VLC menu
@@ -58,7 +52,7 @@ Possible tags:<br/>
 3. for nudity<br/>
 4. for alcohol and drug use<br/>
 
-You can see an example of a cnsr file [here](https://github.com/ophirhan/cnsr-vlc-viewer-addon/tree/main/example)<br/>)
+You can see an example of a cnsr file [here](https://github.com/ophirhan/cnsr-vlc-viewer-addon/tree/main/example)<br/>
 - Explanation of the timestamps displayed: hours:minutes:seconds,millis
 
 In order to make use of cnsr file you need to create a new file with the format as shown in `example/example_file.cnsr`.<br/>
@@ -67,9 +61,9 @@ The file name must be identical to the video name you want to play (except for t
 For example, if the video you want to play is: <br>
 `/foo/bar/myvid.mp4` <br>
 Then the cnsr file should be: <br>
-`/foo/bar/myvid.cnsr` <br>
+`/foo/bar/myvid.cnsr`
 
-####NOTICE
+#### NOTICE
 - Currently there is an issue with directories that have underscore or spaces, so please try to avoid them
 
 
@@ -94,14 +88,14 @@ Since git doesn't allow to clone a project into an existing folder, we reccomend
 
 And that's it! the add-on is installed, and you are ready to start developing.<br/>
 
-##Tips for developers
+## Tips for developers
 - To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).
 - When debbuging in order to see the log messages you need to open the VLC console via:<br/>
 `View > Add interface > Console`<br/>
 - Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
 in order to save your changes you might need to open your IDE as an administartor.<br/>
 ### Getting started with lua
-If you're just getting started with lua here are some important things that set it apart from other programming languages:<br/>
+If you're just getting started with lua, here are some important things that set it apart from other programming languages:<br/>
 - tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
 - lua is an interperted language no need to build anything!<br/>
 - As for a prefered IDE we use intellij IDEA, but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
