@@ -102,7 +102,7 @@ If you're just getting started with lua, here are some important things that set
 
 For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
 
-### How To Contribute?
+## How To Contribute?
 
 Changing and pushing to the main branch is not possible, in order to contribute to our code you'll need to:
 
