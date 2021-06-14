@@ -10,63 +10,44 @@ This add-on is inspired by [MEDERI's "Time v3.2" vlc extension](https://addons.v
 
 Supported OS: Windows, Linux and Mac OS.
 
-# Installing the add-on
+# Installing the add-on for regular use
 
 1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
 ![Screenshot_061221_040915_PM](https://user-images.githubusercontent.com/19567966/121777049-c8d80580-cb98-11eb-9ac7-6db63a0c518f.jpg)
-3. Find your way to these two files: <br/>
--cnsr-vlc-viewer-addon/blob/main/extensions/cnsr_ext.lua<br/>
--cnsr-vlc-viewer-addon/blob/main/intf/cnsr_intf.lua<br/>
 			       
-4. Access lua folder using these paths:
-
-    If you want the extension to be available for all the users of the 
-    computer and not only the user currently logged in choose the all users path.<br/>
-        - Windows<br/>
-            - `%ProgramFiles%\VideoLAN\VLC\lua` (all users)<br/>
-            - `%APPDATA%\VLC\lua` (current user)<br/>
-        - Linux<br/>
-            - `/usr/lib/vlc/lua` (all users)<br/>
-            - `~/.local/share/vlc/lua` (current user)<br/>
-        - Mac OS<br/>
-            - `/Applications/VLC.app/Contents/MacOS/share/lua` (all users)<br/>
-            - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua (current user)<br/>
+3. If you want the add-on to be available for all the users of the 
+    computer, access the `lua` folder using these paths:
+   - Windows<br/>
+   - `%ProgramFiles%\VideoLAN\VLC\lua`<br/>
+   - Linux<br/>
+   - `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
+   - Mac OS<br/>
+   - `/Applications/VLC.app/Contents/MacOS/share/lua`<br/>
+     <br/>
+     If you want the add-on to be available only for a specific user,
+     access the `lua` folder using these paths:
+   - Windows<br/>
+   - `%APPDATA%\VLC\lua`<br/>
+   - Linux<br/>
+   - `~/.local/share/vlc/lua`<br/>
+   - Mac OS<br/>
+   - `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
   
-5. Move `cnsr_ext.lua` to \lua\extensions\ folder.
-6. Move `cnsr_intf.lua` to \lua\intf\ folder.
-7. Start the Extension in VLC menu
+4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file to the `lua` folder.
+5. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
-8. Configure the cnsr categories to your liking.
+6. Click save to set the cnsr interface script as an extra interface.
+7. Restart VLC
+8. Start the Extension again in VLC menu
+    - `View > cnsr` for Windows/Linux.
+    - `VLC > Extensions > cnsr` for Mac OS.
+9. Configure the cnsr categories to your liking.
 
-# Setting up the project for the development
-
-1. Change the lua folder's name to `luaOld`.
-
-2. Clone the repository a new folder named `lua`
-
-3. Copy the contents of `luaOld` dir to `lua` dir
-
-4. Delete `luaOld` dir
-
-and that's it! you are ready to start.<br/>
-
-To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).<br/>
-When debbuging in order to see the log messages you need to open the VLC console via:<br/>
-View > Add interface > Console.<br/>
-Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
-in order to save your changes you might need to open your IDE as an administartor.<br/>
-# Getting started with lua
-If you're just getting started with lua here are some important things that set it apart from other programming languages:<br/>
-tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
-lua is an interperted language no need to build anything!<br/>
-As for a prefered IDE we use intellij IDEA, but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
-For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
-
-# How to use cnsr files:
-NOTE: At this point, The cnsr file is not created automatically or by itself.<br/>
- the user has to watch the video file and decide on the appropriate tags by himself and enter the relevant timestamps.<br/>
+### How to use cnsr files:
+The cnsr file is not created automatically or by itself.<br/>
+the user has to watch the video file and decide on the appropriate tags by himself and enter the relevant time-stamps.<br/>
 
 Possible tags:<br/>
 1 for violence<br/>
@@ -85,8 +66,43 @@ For example, if the video you want to play is: <br>
 Then the cnsr file should be: <br>
 `/foo/bar/myvid.cnsr` <br>
 
-#NOTICE
+####NOTICE
 - Currently there is an issue with directories that have underscore or spaces, so please try to avoid them
+
+
+# Setting up the project for development
+
+1. If you don't have VLC installed on your computer, install from [VLC](https://www.videolan.org/)
+
+2. If you don't have Git installed on your computer, install from [Git](https://git-scm.com/downloads)
+
+3. Open a terminal\CLI with admin privileges:
+    - Windows- `WinKey + x > a` and approve UAC.
+    - Linux- `ctrl + alt + t`, type `sudo -i` and enter password if necessary.
+    - macOS- `cmd + space >`, type `terminal` type `sudo -i` and enter password if necessary.
+    
+4. Type `cd <lua path>` (find `lua path` according to section 3 of "Installing the add-on for regular use").
+5. type `git init`
+6. type `git remote add origin https://github.com/ophirhan/cnsr-vlc-viewer-addon.git`
+7. type `git fetch origin`
+8. type `git checkout -b main --track origin/main`
+
+And that's it! the add-on is installed, and you are ready to start developing.<br/>
+
+##Tips for developers
+To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).<br/>
+When debbuging in order to see the log messages you need to open the VLC console via:<br/>
+View > Add interface > Console.<br/>
+Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
+in order to save your changes you might need to open your IDE as an administartor.<br/>
+### Getting started with lua
+If you're just getting started with lua here are some important things that set it apart from other programming languages:<br/>
+- tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
+- lua is an interperted language no need to build anything!<br/>
+- As for a prefered IDE we use intellij IDEA, but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
+
+For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
+
 
 # Founders
 
