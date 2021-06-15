@@ -129,6 +129,8 @@ function line_to_tag(line)
 	return tag
 end
 
+require 'common'
+
 function load_and_set_tags()
 	Log("load")
 	raw_tags = load_tags_from_file()
@@ -137,9 +139,11 @@ function load_and_set_tags()
 	end
 	Log("loaded")
 	cfg.tags = raw_tags
+	cfg.tags_by_end_time = common.table_copy(raw_tags)
+	table.sort(cfg.tags_by_end_time, function(a, b) return a.end_time < b.end_time end)
 
 
-	for _, v in ipairs(cfg.tags) do
+	for _, v in ipairs(cfg.tags_by_end_time) do
 		Log("start: " .. tostring(v.start_time/1000000))
 		Log("end: " .. tostring(v.end_time/1000000))
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
