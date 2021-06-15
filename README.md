@@ -14,13 +14,13 @@ Supported OS: Windows, Linux and Mac OS.
 
 ## Installing the add-on for regular use
 
-1. If you don't have VLC in your computer, install from [VLC](https://www.videolan.org/)
+1. If you don't have VLC installed on your computer, install it now from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
 ![Screenshot_061221_040915_PM](https://user-images.githubusercontent.com/19567966/121777049-c8d80580-cb98-11eb-9ac7-6db63a0c518f.jpg)
 			       
 3. If you want the add-on to be available for all the users of the 
     computer, access the `lua` folder using these paths:
-   - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>
+   - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>  or  `%ProgramFiles (x86)%\VideoLAN\VLC\lua`<br/>
    - Linux- `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
    - MacOS- `/Applications/VLC.app/Contents/MacOS/share/lua`<br/>
      <br/>
@@ -29,8 +29,10 @@ Supported OS: Windows, Linux and Mac OS.
    - Windows- `%APPDATA%\VLC\lua`<br/>
    - Linux- `~/.local/share/vlc/lua`<br/>
    - MacOS- `/Users/%your_name%/Library/Application Support/org.videolan.vlc/lua`<br/>
+   If the paths above don't exist and you already have VLC installed on your computer try to uninstall it and then reinstall it. 
+   Then, make sure you are using the most updated version of VLC.
   
-4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file to the `lua` folder.
+4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file into the `lua` folder.
 5. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
@@ -80,7 +82,7 @@ Since git doesn't allow to clone a project into an existing folder, we reccomend
     - Linux- `ctrl + alt + t`, type `sudo -i` and enter password if necessary.
     - macOS- `cmd + space >`, type `terminal` type `sudo -i` and enter password if necessary.
     
-4. Type `cd <lua path>` (find `lua path` according to section 3 of "Installing the add-on for regular use").
+4. Type `cd "<lua path>"` (find `lua path` according to section 3 of "Installing the add-on for regular use").
 5. type `git init`
 6. type `git remote add origin https://github.com/ophirhan/cnsr-vlc-viewer-addon.git`
 7. type `git fetch origin`
@@ -89,19 +91,28 @@ Since git doesn't allow to clone a project into an existing folder, we reccomend
 And that's it! the add-on is installed, and you are ready to start developing.<br/>
 
 ## Tips for developers
-- To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).
-- When debbuging in order to see the log messages you need to open the VLC console via:<br/>
-`View > Add interface > Console`<br/>
+- To interact with VLC we use the API documented [here](http://git.videolan.org/?p=vlc/vlc-3.0.git;a=blob_plain;f=share/lua/README.txt).
+- For more support you can search this [dedicated forum for scripting VLC with lua](https://forum.videolan.org/viewforum.php?f=29) and specificaly visit this [getting started thread](https://forum.videolan.org/viewtopic.php?f=29&t=98644).
+- When debbuging in order to see the log messages you need to open the VLC messages panel via:<br/>
+`ctrl + m` or `command + m`<br/>
 - Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
 in order to save your changes you might need to open your IDE as an administartor.<br/>
 ### Getting started with lua
 If you're just getting started with lua, here are some important things that set it apart from other programming languages:<br/>
 - tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
 - lua is an interperted language no need to build anything!<br/>
-- As for a prefered IDE we use intellij IDEA, but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
+- As for a prefered IDE we use [intellij IDEA](https://www.jetbrains.com/idea/download/#section=windows) with [emmyLUA plugin](https://plugins.jetbrains.com/plugin/9768-emmylua), but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
 
 For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
 
+## How To Contribute?
+
+If you are not an approved collaborator, changing and pushing to the main branch is not possible, in order to contribute to our code you'll need to:
+
+1. Fork this repo.
+2. Work on a new local branch.
+3. Push the changes from the local branch to github.
+4. Create a new pull request (to merge the changes from you branch to our main branch), and wait for it's approval.
 
 # Founders
 

@@ -7,6 +7,7 @@ SHOW = 1
 SKIP = 2
 MUTE = 3
 HIDE = 4
+MS_IN_SEC =1000000
 FRAME_INTERVAL = 30000
 SKIP_SAFETY = 10000
 MINIMUM_DISPLAY_TIME = 2000000
@@ -84,7 +85,7 @@ function looper()
 					execute_tag(tag, input)
 				end
 				done = tag_index == #tags
-				if not done then
+				if not done and current_time>tag.start_time then
 					tag_index = tag_index + 1
 					tag = tags[tag_index]
 				end
@@ -115,11 +116,13 @@ function check_disable_actions()
 end
 
 function skip(skip_start, skip_end, input)
-	if not reverse then -- we went back in time, cut the duration of skip tag from timeline
-		current_time = skip_end + SKIP_SAFETY
+	local skip_length = skip_end - skip_start
+	if reverse then -- we went back in time, cut the duration of skip tag from timeline
+		current_time = math.max(current_time - skip_length, 0)
+		--log(tostring(current_time/1000000))
+		--log("tag: "..tostring(tag_index))
 	else
-		local skip_length = skip_end - skip_start
-		current_time = math.max(current_time - skip_length, SKIP_SAFETY)
+		current_time = math.min(current_time + skip_length + SKIP_SAFETY,vlc.input.item():duration()*MS_IN_SEC) --think if we want to!
 	end
 	vlc.var.set(input,"time", current_time)
 end
