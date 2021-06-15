@@ -101,7 +101,7 @@ in order to save your changes you might need to open your IDE as an administarto
 If you're just getting started with lua, here are some important things that set it apart from other programming languages:<br/>
 - tables are equivalent to hashsets and arrays simultaneously, their index starts from 1 (not 0).<br/>
 - lua is an interperted language no need to build anything!<br/>
-- As for a prefered IDE we use intellij IDEA, but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
+- As for a prefered IDE we use [intellij IDEA](https://www.jetbrains.com/idea/download/#section=windows) with [emmyLUA plugin](https://plugins.jetbrains.com/plugin/9768-emmylua), but [eclipse](https://www.eclipse.org/ldt/#installation) should work as well (maybe better).<br/>
 
 For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) will help you get up and running in little to no time.<br/>
 
