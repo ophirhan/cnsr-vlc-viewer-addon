@@ -82,7 +82,7 @@ Since git doesn't allow to clone a project into an existing folder, we reccomend
     - Linux- `ctrl + alt + t`, type `sudo -i` and enter password if necessary.
     - macOS- `cmd + space >`, type `terminal` type `sudo -i` and enter password if necessary.
     
-4. Type `cd <lua path>` (find `lua path` according to section 3 of "Installing the add-on for regular use").
+4. Type `cd "<lua path>"` (find `lua path` according to section 3 of "Installing the add-on for regular use").
 5. type `git init`
 6. type `git remote add origin https://github.com/ophirhan/cnsr-vlc-viewer-addon.git`
 7. type `git fetch origin`
