@@ -92,6 +92,7 @@ And that's it! the add-on is installed, and you are ready to start developing.<b
 
 ## Tips for developers
 - To interact with VLC we use the API documented [here](http://git.videolan.org/?p=vlc/vlc-3.0.git;a=blob_plain;f=share/lua/README.txt).
+- For more support you can search this [dedicated forum for scripting VLC with lua](https://forum.videolan.org/viewforum.php?f=29) and specificaly visit this [getting started thread](https://forum.videolan.org/viewtopic.php?f=29&t=98644).
 - When debbuging in order to see the log messages you need to open the VLC messages panel via:<br/>
 `ctrl + m` or `command + m`<br/>
 - Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
@@ -106,7 +107,7 @@ For more on lua [this tutorial](https://www.tutorialspoint.com/lua/index.htm) wi
 
 ## How To Contribute?
 
-Changing and pushing to the main branch is not possible, in order to contribute to our code you'll need to:
+If you are not an approved collaborator, changing and pushing to the main branch is not possible, in order to contribute to our code you'll need to:
 
 1. Fork this repo.
 2. Work on a new local branch.
