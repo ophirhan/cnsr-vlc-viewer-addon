@@ -20,7 +20,7 @@ Supported OS: Windows, Linux and Mac OS.
 			       
 3. If you want the add-on to be available for all the users of the 
     computer, access the `lua` folder using these paths:
-   - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>
+   - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>  or  `%ProgramFiles (x86)%\VideoLAN\VLC\lua`<br/>
    - Linux- `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
    - MacOS- `/Applications/VLC.app/Contents/MacOS/share/lua`<br/>
      <br/>
