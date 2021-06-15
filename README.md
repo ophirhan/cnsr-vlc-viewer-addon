@@ -91,9 +91,9 @@ Since git doesn't allow to clone a project into an existing folder, we reccomend
 And that's it! the add-on is installed, and you are ready to start developing.<br/>
 
 ## Tips for developers
-- To interact with VLC we use the API documented [here](https://github.com/videolan/vlc/blob/master/share/lua/README.txt).
-- When debbuging in order to see the log messages you need to open the VLC console via:<br/>
-`View > Add interface > Console`<br/>
+- To interact with VLC we use the API documented [here](http://git.videolan.org/?p=vlc/vlc-3.0.git;a=blob_plain;f=share/lua/README.txt).
+- When debbuging in order to see the log messages you need to open the VLC messages panel via:<br/>
+`ctrl + m` or `command + m`<br/>
 - Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
 in order to save your changes you might need to open your IDE as an administartor.<br/>
 ### Getting started with lua
