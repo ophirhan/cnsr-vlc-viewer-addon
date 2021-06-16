@@ -21,13 +21,12 @@ function descriptor()
              author = "EEO" ;
              capabilities = {"menu", "input-listener"};
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
-	
 end
 
 
 function activate()
 	os.setlocale("C", "all") -- just in case
-	Get_config()
+	get_config()
 	if config and config.CNSR then
 		cfg = config.CNSR
 	end
@@ -49,7 +48,7 @@ function trigger_menu(dlg_id)
 		load_and_set_tags()
 	elseif dlg_id==3 then -- Settings
 		if dlg then dlg:delete() end
-		create_dialog_S() --configure inteface script to start when VLC starts
+		create_dialog_S() --configure interface script to start when VLC starts
 	end
 end
 
@@ -58,23 +57,30 @@ options = {"Show", "Skip", "Mute", "Hide"}
 function show_category_selection()
 	close_dlg()
 	dlg = vlc.dialog("Category selection")
-	local pos = 2
-	for i,v in ipairs(CATEGORIES) do
-		dlg:add_label(v.description, 3,pos,3,3)
-		dropdowns[v.description] = dlg:add_dropdown(6,pos,3,3)
-		for j,w in ipairs(options) do
-			dropdowns[v.description]:add_value(w, j)
-		end
-		pos = pos + 3
+	local y = 1
+	local x = 1
+	for idx, value in ipairs(CATEGORIES) do
+		dlg:add_label(value.description, 1, y, 1, 1)
+		dropdowns[idx] = create_drop_down(x, y)
+		y = y + 1
 	end
-	button_apply = dlg:add_button("apply categories to censor",click_play, 4, pos, 3, 3)
+	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y, 1, 1)
     dlg:show()
 end
 
 
+function create_drop_down(x, y)
+	local dropdown = dlg:add_dropdown(x + 2, y, 2, 1)
+	for idx, word in ipairs(options) do
+		dropdown:add_value(word, idx)
+	end
+	return dropdown
+end
+
+
 function click_play()
-	for i,v in ipairs(CATEGORIES) do
-		v.action = dropdowns[v.description]:get_value()
+	for idx, value in ipairs(CATEGORIES) do
+		value.action = dropdowns[idx]:get_value()
 	end
 	Log("click play")
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
@@ -83,7 +89,7 @@ end
 
 function get_cnsr_uri()
 	if vlc.input.item() == nil then
-		Set_config(cfg, "CNSR")
+		set_config(cfg, "CNSR")
 		return nil
 	end
 	local uri = vlc.input.item():uri()
@@ -149,7 +155,7 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	Set_config(cfg, "CNSR")
+	set_config(cfg, "CNSR")
 end
 
 
@@ -202,11 +208,11 @@ end
 
 function close_dlg()
   if dlg ~= nil then
-    dlg:hide() 
+    dlg:hide()
   end
-  
+
   dlg = nil
-  collectgarbage() --~ !important	
+  collectgarbage() --~ !important
 end
 
 
@@ -219,42 +225,37 @@ end
 function Log(lm)
 	vlc.msg.info("[cnsr_ext] " .. lm)
 end
+
 -----------------------------------------
-
---------------------
-
-
 
 function strip_extension(uri)
 	uri = string.sub(uri,9)
-	i = string.find(uri, ".[^.]*$")
+	i = string.find(uri, ".[^\.]*$")
 	return string.sub(uri, 0, i)
 end
 
 -----------------------------------------
 
-
-
-function Get_config()
+function get_config()
 	local s = vlc.config.get("bookmark10")
 	if not s or not string.match(s, "^config={.*}$") then s = "config={}" end
 	assert(loadstring(s))() -- global var
 end
 
-function Set_config(cfg_table, cfg_title)
+function set_config(cfg_table, cfg_title)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
-	Get_config()
+	get_config()
 	config[cfg_title]=cfg_table
-	vlc.config.set("bookmark10", "config="..Serialize(config))
+	vlc.config.set("bookmark10", "config=".. serialize(config))
 end
 
-function Serialize(t)
+function serialize(t)
 	if type(t)=="table" then
 		local s='{'
 		for k,v in pairs(t) do
 			if type(k)~='number' then k='"'..k..'"' end
-			s = s..'['..k..']='..Serialize(v)..',' -- recursion
+			s = s..'['..k..']='.. serialize(v)..',' -- recursion
 		end
 		return s..'}'
 	elseif type(t)=="string" then
