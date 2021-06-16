@@ -1,0 +1,5 @@
+1) Worked as expected - skipped from 00:00:04 to 00:00:15.
+
+2)modifing mid-censoring - modified to "skip" from "show" in the middle of the timestamp, 
+and it skipped as expected.
+

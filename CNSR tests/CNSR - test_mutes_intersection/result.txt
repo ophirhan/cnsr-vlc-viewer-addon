@@ -1,0 +1,5 @@
+1) Muted as expected - started at 00:00:04 and finished at 00:00:15
+
+2)modifing mid-censoring, tried to modify back to 'show' and the "muted" massage was gone but the muted 
+continued until the end of the video.
+

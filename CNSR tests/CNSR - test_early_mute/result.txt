@@ -1,0 +1,6 @@
+1) Worked as expected - started muting at 00:00:01 and hid untill 00:00:15
+
+2)modifing mid-censoring - modified the 4's catagory to 'show', changed the 
+ print to "muting violance" as expected - the video was muted until the end, but increasing the volume manualy is
+ authorized.
+

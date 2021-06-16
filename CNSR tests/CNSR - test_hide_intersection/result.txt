@@ -1,0 +1,10 @@
+1) Worked as expected - started hiding at 00:00:04 and hid untill 00:00:15
+
+2)modifing mid-censoring - modified the 4's catagory to 'show', changed the 
+ print to "hiding violance" as expected - but kept the video hidden untill 00:00:15 although that request was changed, 
+ with nothing printed on the screen.
+
+3)two times modifing mid-censoring - The video was hidden the untill the end, 
+althogh 00:00:15 passed.
+
+
