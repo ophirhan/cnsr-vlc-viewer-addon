@@ -1,3 +1,5 @@
+json = require 'dkjson'
+require 'common'
 config={}
 cfg={}
 dropdowns = {}
@@ -135,7 +137,6 @@ function line_to_tag(line)
 	return tag
 end
 
-require 'common'
 
 function load_and_set_tags()
 	Log("load")
@@ -237,9 +238,7 @@ end
 -----------------------------------------
 
 function get_config()
-	local s = vlc.config.get("bookmark10")
-	if not s or not string.match(s, "^config={.*}$") then s = "config={}" end
-	assert(loadstring(s))() -- global var
+	config = json.decode(vlc.config.get("bookmark10"))
 end
 
 function set_config(cfg_table, cfg_title)
@@ -247,22 +246,7 @@ function set_config(cfg_table, cfg_title)
 	if not cfg_title then cfg_title=descriptor().title end
 	get_config()
 	config[cfg_title]=cfg_table
-	vlc.config.set("bookmark10", "config=".. serialize(config))
-end
-
-function serialize(t)
-	if type(t)=="table" then
-		local s='{'
-		for k,v in pairs(t) do
-			if type(k)~='number' then k='"'..k..'"' end
-			s = s..'['..k..']='.. serialize(v)..',' -- recursion
-		end
-		return s..'}'
-	elseif type(t)=="string" then
-		return string.format("%q", t)
-	else --if type(t)=="boolean" or type(t)=="number" then
-		return tostring(t)
-	end
+	vlc.config.set("bookmark10", json.encode(config))
 end
 
 function SplitString(s, d) -- string, delimiter pattern

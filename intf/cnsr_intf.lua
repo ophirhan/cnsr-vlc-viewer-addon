@@ -1,4 +1,4 @@
-
+json = require 'dkjson'
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 -- constants
@@ -208,10 +208,9 @@ function log(lm)
 	vlc.msg.info("[cnsr_intf] " .. lm)
 end
 
+
 function get_config()
-	local s = vlc.config.get("bookmark10")
-	if not s or not string.match(s, "^config={.*}$") then s = "config={}" end
-	assert(loadstring(s))()  -- global var
+	config = json.decode(vlc.config.get("bookmark10"))
 end
 
 
