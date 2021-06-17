@@ -95,6 +95,7 @@ And that's it! the add-on is installed, and you are ready to start developing.<b
 - For more support you can search this [dedicated forum for scripting VLC with lua](https://forum.videolan.org/viewforum.php?f=29) and specificaly visit this [getting started thread](https://forum.videolan.org/viewtopic.php?f=29&t=98644).
 - When debbuging in order to see the log messages you need to open the VLC messages panel via:<br/>
 `ctrl + m` or `command + m`<br/>
+- Using a debugger is reported possible and explained [here](https://forum.videolan.org/viewtopic.php?f=29&t=98644&p=460505#p460505) but we haven't tried it.
 - Since the lua folder is part of the vlc installation directory and writing to it might be proteced,<br/>
 in order to save your changes you might need to open your IDE as an administartor.<br/>
 ### Getting started with lua
