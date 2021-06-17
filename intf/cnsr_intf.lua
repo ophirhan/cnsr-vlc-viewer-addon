@@ -1,6 +1,6 @@
 json = require 'dkjson'
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
-
+-- foo
 -- constants
 config={}
 MS_IN_SEC =1000000
