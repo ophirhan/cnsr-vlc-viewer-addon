@@ -137,9 +137,13 @@ function looper()
 					actions[tag.action].execute(tag)
 				end
 				done = tag_index == #tags
-				if not done and current_time>tag.start_time then
-					tag_index = tag_index + 1
-					tag = tags[tag_index]
+				if not done then
+					if tag.action == SKIP then
+						tag = get_current_tag(tags, tags_by_end_time) --if we skipped back we need to rewind the index
+					else
+						tag_index = tag_index + 1
+						tag = tags[tag_index]
+					end
 				end
 			end
 			prev_time = current_time
