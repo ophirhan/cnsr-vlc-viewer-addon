@@ -25,29 +25,32 @@ input = nil
 actions = {}
 -- end globals
 
+--[[
+this function does nothing.
+used for SHOW action
+--]]
 function nothing()
 end
 
 
--- show
-actions.show = { execute= nothing, update= nothing }
-
-table.insert(actions, actions.show) --1
--- end show
-
--- skip
-actions.skip = {}
-
-function actions.skip.execute(tag)
-	skip(tag.start_time, tag.end_time)
-	display_reason("skipped", tag.category, tag.end_time)
+--[[
+action: one of SHOW, HIDE, MUTE, SKIP
+this function checks if the action is no longer relevant(passed it or )
+--]]
+function check_deactivate(action)
+	if action.activated and (current_time > action.end_time or current_time < action.start_time) then
+		action.deactivate()
+		action.activated = false
+	end
 end
 
-actions.skip.update = nothing;
-
-table.insert(actions, actions.skip) --2
--- end skip
-
+--[[
+action: one of SHOW, HIDE, MUTE, SKIP
+tag: current relevant tag
+this function checks if the action is activated.
+if it is it updates its end time as the tag's ending time
+else it activates it
+--]]
 function check_activate(action, tag)
 	if action.activated then
 		action.end_time = math.max(action.end_time, tag.end_time)
@@ -60,14 +63,44 @@ function check_activate(action, tag)
 	display_reason(action.action_word, tag.category, tag.end_time)
 end
 
-function check_deactivate(action)
-	if action.activated and (current_time > action.end_time or current_time < action.start_time) then
-		action.deactivate()
-		action.activated = false
+--[[
+this function checks if both MUTE tag and HIDE tag are activated at the same time
+and if they do, the tag becomes SKIP tag
+--]]
+function check_collision()
+	if actions.hide.activated and actions.mute.activated then
+		local skip_end = math.min(actions.mute.end_time, actions.hide.end_time)
+		local skip_start = math.max(actions.mute.start_time, actions.hide.start_time)
+		skip(skip_start, skip_end)
 	end
 end
 
--- mute
+--[[
+SHOW handling starts here
+--]]
+actions.show = { execute= nothing, update= nothing }
+
+table.insert(actions, actions.show) --1
+-- end show
+
+--[[
+SKIP handling starts here
+--]]
+actions.skip = {}
+
+function actions.skip.execute(tag)
+	skip(tag.start_time, tag.end_time)
+	display_reason("skipped", tag.category, tag.end_time)
+end
+
+actions.skip.update = nothing;
+
+table.insert(actions, actions.skip) --2
+-- end skip
+
+--[[
+MUTE handling starts here
+--]]
 actions.mute = { activated = false, action_word = "muted" }
 
 actions.mute.execute= function(tag)	check_activate(actions.mute, tag) end
@@ -84,7 +117,10 @@ actions.mute.deactivate= function() vlc.volume.set(actions.mute.prev_volume) end
 table.insert(actions, actions.mute) --3
 -- end mute
 
--- hide
+
+--[[
+HIDE handling starts here
+--]]
 actions.hide = { activated = false, action_word = "hidden" }
 
 actions.hide.execute= function(tag) check_activate(actions.hide, tag) end
@@ -103,16 +139,10 @@ actions.hide.deactivate= function() vlc.var.set(actions.hide.hide_filter, "video
 table.insert(actions, actions.hide) --4
 -- end hide
 
-
-function check_collision()
-	if actions.hide.activated and actions.mute.activated then
-		local skip_end = math.min(actions.mute.end_time, actions.hide.end_time)
-		local skip_start = math.max(actions.mute.start_time, actions.hide.start_time)
-		skip(skip_start, skip_end)
-	end
-end
-
--- Main app entry point
+--[[
+this function is the main and most important function.
+it runs all the time in the background of VLC, finds the relevant tag and execute it.
+--]]
 function looper()
 	local next_loop_time = vlc.misc.mdate()
 	local loop_counter = 0
@@ -149,18 +179,32 @@ function looper()
 	end
 end
 
+--[[
+this function goes over all actions and calls their update function
+--]]
 function update_actions()
 	for _, action in ipairs(actions) do
 		action.update()
 	end
 end
 
+--[[
+reason string: message info
+category: A category
+tag_end: ending time of the tag
+this function shows the user the reason for the skip and the category that caused it.
+--]]
 function display_reason(reason_string, category, tag_end)
 	if tag_end - current_time > MINIMUM_DISPLAY_TIME and not reverse then
 		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
+--[[
+skip_start: the starting time of skip tag
+skip_end: the starting time of skip tag
+this function does the logic for skipping in the video.
+--]]
 function skip(skip_start, skip_end)
 	local skip_length = skip_end - skip_start
 	if reverse then -- we went back in time, cut the duration of skip tag from timeline
@@ -171,6 +215,10 @@ function skip(skip_start, skip_end)
 	vlc.var.set(input,"time", current_time)
 end
 
+--[[
+tags_by_end_time: all the tags ordered by ending time
+this function finds the number of tags that are still relevant (didn't pass them)
+--]]
 function get_num_relevant_tags(tags_by_end_time)
 	while tag_by_end_time_index > 1 and current_time < tags_by_end_time[tag_by_end_time_index - 1].end_time do
 		tag_by_end_time_index = tag_by_end_time_index - 1
@@ -188,6 +236,11 @@ function get_num_relevant_tags(tags_by_end_time)
 	return relevant_tags
 end
 
+--[[
+tags_by_end_time: all the tags ordered by ending time
+tags: all the tags sorted by starting time
+this function finds the next relevant tag (the next tag that should be executed)
+--]]
 function get_current_tag(tags, tags_by_end_time)
 	if reverse then
 		relevant_tags = get_num_relevant_tags(tags_by_end_time) --#(tags where current_time < tag.end_time)
@@ -210,12 +263,17 @@ function get_current_tag(tags, tags_by_end_time)
 	return tags[tag_index]
 end
 
+--[[
+this function writes logs to console
+--]]
 function log(str,num)
 	if num then str = str .. " " .. tostring(num) end
 	vlc.msg.info("[cnsr_intf] " .. str)
 end
 
-
+--[[
+this function reads configs from a file and sets the config parameter
+--]]
 function get_config()
 	config = json.decode(vlc.config.get("bookmark10"))
 end
