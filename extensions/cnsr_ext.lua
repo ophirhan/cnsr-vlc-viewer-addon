@@ -302,6 +302,9 @@ this function gets configs in a file
 --]]
 function get_config()
 	config = json.decode(vlc.config.get("bookmark10"))
+	if config == nil then
+		config = {}
+	end
 end
 
 --[[ 
