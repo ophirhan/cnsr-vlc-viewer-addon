@@ -293,16 +293,18 @@ this function gets an uri and strips it.
 --]]
 function strip_extension(uri)
 	uri = string.sub(uri,9)
-	i = string.find(uri, ".[^\.]*$")
-	return string.sub(uri, 0, i)
+	local index = string.find(uri, ".[^\.]*$")
+	return string.sub(uri, 0, index)
 end
-
 -----------------------------------------
---[[ 
+--[[
 this function gets configs in a file
 --]]
 function get_config()
 	config = json.decode(vlc.config.get("bookmark10"))
+	if config == nil then
+		config = {}
+	end
 end
 
 --[[ 
