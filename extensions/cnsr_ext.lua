@@ -1,6 +1,6 @@
 --some globals:
-json = require 'dkjson'
-require 'common'
+json = require ('dkjson')
+require ('common')
 config={}
 cfg={}
 dropdowns = {}
