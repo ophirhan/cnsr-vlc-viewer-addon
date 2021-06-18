@@ -1,4 +1,4 @@
-json = require 'dkjson'
+json = require ('dkjson')
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 -- constants
