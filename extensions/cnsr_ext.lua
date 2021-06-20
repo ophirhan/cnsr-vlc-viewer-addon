@@ -1,6 +1,6 @@
 --some globals:
-json = require ('dkjson')
-require ('common')
+json = require ("dkjson")
+require ("common")
 config={}
 cfg={}
 dropdowns = {}
@@ -18,7 +18,7 @@ CATEGORIES = { [1] = { description = "violence", action=SKIP},
 			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
 -- defaults
 
---[[ 
+--[[
 in every extention, a descriptor function is a must.
 this function describes the extention
 --]]
@@ -30,7 +30,7 @@ function descriptor()
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
 end
 
---[[ 
+--[[
 in every extention, an activate function is a must.
 this function runs first. it starts the dialog and loads configs.
 --]]
@@ -48,7 +48,7 @@ function activate()
 	end
 end
 
---[[ 
+--[[
 dig_id: the id of the wanted dialog
 this function opens the wanted dialog based on id.
 --]]
@@ -65,10 +65,10 @@ function trigger_menu(dlg_id)
 	end
 end
 
--- the user selects the wanted action when censoring is needed 
+-- the user selects the wanted action when censoring is needed
 options = {"Show", "Skip", "Mute", "Hide"}
 
---[[ 
+--[[
 this function creates a category dialog(the main dialog)
 the dialog contains 4 lists of actions, 4 labels to describe the categories and one "apply" button
 --]]
@@ -86,7 +86,7 @@ function show_category_selection()
     dlg:show()
 end
 
---[[ 
+--[[
 x: row position
 y: col position
 this function creats a dropdown list of options in location (x,y) and returns it
@@ -99,7 +99,7 @@ function create_drop_down(x, y)
 	return dropdown
 end
 
---[[ 
+--[[
 when the user taps the "apply" button, insert the wanted actions inside CATEGORIES from the dropdown
 close the dialog and call load_and_set_tags(start reading from the cnsr file)
 --]]
@@ -112,7 +112,7 @@ function click_play()
 	load_and_set_tags()
 end
 
---[[ 
+--[[
 this function gets the uri of the movie and changes it to cnsr_uri
 --]]
 function get_cnsr_uri()
@@ -126,7 +126,7 @@ function get_cnsr_uri()
 	return uri_sans_extension .. "cnsr"
 end
 
---[[ 
+--[[
 this function is the main parser.
 it reads the cnsr file, parse its lines, inserts it into a table and returns it.
 --]]
@@ -153,7 +153,7 @@ function load_tags_from_file()
 	return raw_tags
 end
 
---[[ 
+--[[
 this function gets a line of cnsr file and returns is as a tag
 tag properties:
 start_time- start of the tag in micro seconds
@@ -175,10 +175,11 @@ function line_to_tag(line)
 	return tag
 end
 
---[[ 
+--[[
 this function loads tags from cnsr file and saves them into config file
 --]]
 function load_and_set_tags()
+	local name = get_file_name()
 	Log("load")
 	raw_tags = load_tags_from_file()
 	if raw_tags == nil then
@@ -196,10 +197,10 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	set_config(cfg, "CNSR")
+	set_config(cfg, name)
 end
 
---[[ 
+--[[
 this function gets a string representing time (from this shape: hh:mm:ss,ms)
 and converts it to microseconds
 --]]
@@ -209,7 +210,7 @@ function hms_ms_to_us(time_string) -- microseconds
 		return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
 end
 
---[[ 
+--[[
 this function is called only on the 1st activation of the extention
 it makes the user to define the interface and enable it.
 --]]
@@ -222,7 +223,7 @@ function create_dialog_S()
 	lb_message = dlg:add_label("Current status: " .. (ti and "ENABLED" or "DISABLED") .. " " .. tostring(VLC_luaintf),1,3,3,1)
 end
 
---[[ 
+--[[
 this function is called only on the 1st activation of the extention
 it makes the user to define the interface and enable it.
 --]]
@@ -240,7 +241,7 @@ function click_SAVE_settings()
 	lb_message:set_text("Please restart VLC for changes to take effect!")
 end
 
---[[ 
+--[[
 in every extention, a deactivate function is a must.
 when the extention dies, this function is called.
 --]]
@@ -260,7 +261,7 @@ function menu()
 	return {"Modify censor categories", "Retry loading cnsr file"}
 end
 
---[[ 
+--[[
 this function closes a dialog and release its resources
 --]]
 function close_dlg()
@@ -272,15 +273,15 @@ function close_dlg()
   collectgarbage() --~ !important
 end
 
---[[ 
+--[[
 this function is called when the user has changed the video
-it 
+it
 --]]
 function input_changed()
 	load_and_set_tags()
 end
 
---[[ 
+--[[
 use this function to print to console
 --]]
 function Log(lm)
@@ -288,13 +289,20 @@ function Log(lm)
 end
 
 -----------------------------------------
---[[ 
+--[[
 this function gets an uri and strips it.
 --]]
 function strip_extension(uri)
 	uri = string.sub(uri,9)
 	local index = string.find(uri, ".[^\.]*$")
 	return string.sub(uri, 0, index)
+end
+function get_file_name()
+	local uri = vlc.input.item():uri()
+	uri = vlc.strings.decode_uri(uri)
+	local index = string.find(uri, "[^\/]*$")
+	local index2 = string.find(uri, ".[^\.]*$")
+	return string.sub(uri, index, index2 - 1)
 end
 -----------------------------------------
 --[[
@@ -307,7 +315,7 @@ function get_config()
 	end
 end
 
---[[ 
+--[[
 this function saves configs in a file
 --]]
 function set_config(cfg_table, cfg_title)
