@@ -37,9 +37,10 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
-	if config and config.CNSR then
-		cfg = config.CNSR
-	end
+	-- TODO: dont know what to do with that line
+	--if config and config.CNSR then
+	--	cfg = config.CNSR
+	--end
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
 	if not ti or VLC_luaintf~=intf_script then
 		trigger_menu(3)
@@ -171,7 +172,6 @@ function line_to_tag(line)
 	tag.end_time = hms_ms_to_us(end_string)
 	tag.category = category
 	tag.action = action
-	--tag.name = get_file_name()
 	return tag
 end
 
