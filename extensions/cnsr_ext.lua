@@ -12,10 +12,10 @@ intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
 local dlg
 
 -- todo: add epilepsy category
-CATEGORIES = { [1] = { description = "violence", action=SKIP},
-			   [2] = {description = "verbal abuse", action=SKIP},
-			   [3] =  {description = "nudity", action=SKIP},
-			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
+CATEGORIES = { [1] = { description = "Violence", action=SKIP},
+			   [2] = {description = "Verbal abuse", action=SKIP},
+			   [3] =  {description = "Nudity", action=SKIP},
+			   [4] =  {description = "Alcohol and drug consumption", action=SKIP}}
 -- defaults
 
 --[[
@@ -37,11 +37,12 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
+	pass_cfg = json.decode(vlc.config.get("bookmark8"))
 	if config and config.CNSR then
 		cfg = config.CNSR
 	end
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
-	if not ti or VLC_luaintf~=intf_script then
+	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
 		trigger_menu(3)
 	else
 		trigger_menu(1)
@@ -82,7 +83,10 @@ function show_category_selection()
 		dropdowns[idx] = create_drop_down(x, y)
 		y = y + 1
 	end
-	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y, 1, 1)
+	dlg:add_label("Enter password:",1, y, 1, 1)
+	text_box = dlg:add_password("", 1, y+1, 1, 1)
+	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y+2, 1, 1)
+	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y + 3, 1, 1)
 	dlg:show()
 end
 
@@ -107,9 +111,14 @@ function click_play()
 	for idx, value in ipairs(CATEGORIES) do
 		value.action = dropdowns[idx]:get_value()
 	end
-	Log("click play")
-	close_dlg() --add option to reopen dialog and reload tags according to new filters
-	load_and_set_tags()
+	local check_password = text_box:get_text()
+	Log(check_password)
+	Log(pass_cfg["password"])
+	if check_password == pass_cfg["password"] then
+		Log("click play")
+		close_dlg()
+		load_and_set_tags()
+	end
 end
 
 --[[
@@ -171,7 +180,6 @@ function line_to_tag(line)
 	tag.end_time = hms_ms_to_us(end_string)
 	tag.category = category
 	tag.action = action
-	--tag.name = get_file_name()
 	return tag
 end
 
@@ -219,9 +227,14 @@ function create_dialog_S()
 	dlg = vlc.dialog(descriptor().title .. " > SETTINGS")
 	cb_extraintf = dlg:add_check_box("Enable interface: ", true,1,1,1,1)
 	ti_luaintf = dlg:add_text_input(intf_script,2,1,2,1)
-	dlg:add_button("SAVE!", click_SAVE_settings,1,2,1,1)
+	dlg:add_label("Choose your password:",1, 2, 1, 1)
+	dlg:add_label("Password:",1, 3, 1, 1)
+	set_password = dlg:add_password("", 2, 3, 3, 1)
+	dlg:add_label("Password hint:",1, 4, 1, 1)
+	set_hint = dlg:add_text_input("", 2, 4, 3, 1)
+	dlg:add_button("SAVE!", click_SAVE_settings,1,5,1,1)
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
-	lb_message = dlg:add_label("Current status: " .. (ti and "ENABLED" or "DISABLED") .. " " .. tostring(VLC_luaintf),1,3,3,1)
+	lb_message = dlg:add_label("Current status: " .. (ti and "ENABLED" or "DISABLED") .. " " .. tostring(VLC_luaintf),1,6,3,1)
 end
 
 --[[
@@ -230,7 +243,11 @@ it makes the user to define the interface and enable it.
 --]]
 function click_SAVE_settings()
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
-
+	cfg["password"] = set_password:get_text()
+	cfg["hint"] = set_hint:get_text()
+	Log(cfg["password"])
+	Log(cfg["hint"])
+	set_config(cfg, "passwords", 8)
 	if cb_extraintf:get_checked() then
 		if not ti then table.insert(t, "luaintf") end
 		vlc.config.set("lua-intf", ti_luaintf:get_text())
