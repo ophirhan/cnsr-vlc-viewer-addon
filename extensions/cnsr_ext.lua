@@ -37,6 +37,10 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
+	if vlc.playlist.status() == "playing" then
+		Log("Paused the video")
+		vlc.playlist.pause()
+	end
 	if config and config.CNSR then
 		cfg = config.CNSR
 	end
@@ -108,6 +112,7 @@ function click_play()
 		value.action = dropdowns[idx]:get_value()
 	end
 	Log("click play")
+	vlc.playlist.play()
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_and_set_tags()
 end
@@ -301,7 +306,7 @@ end
 this function gets configs in a file
 --]]
 function get_config()
-	config = json.decode(vlc.config.get("bookmark10"))
+	-- config = json.decode(vlc.config.get("bookmark10"))
 	if config == nil then
 		config = {}
 	end
