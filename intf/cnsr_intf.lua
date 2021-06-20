@@ -31,6 +31,12 @@ used for SHOW action
 function nothing()
 end
 
+function get_file_name()
+	if vlc.input.item() == nil then
+		return nil
+	end
+	return vlc.input.item():name()
+end
 
 --[[
 action: one of SHOW, HIDE, MUTE, SKIP
@@ -143,19 +149,19 @@ this function is the main and most important function.
 it runs all the time in the background of VLC, finds the relevant tag and execute it.
 --]]
 function looper()
+	local name = get_file_name()
 	local next_loop_time = vlc.misc.mdate()
 	local loop_counter = 0
 	while true do
+		name = get_file_name()
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
-		if loop_counter == 0 then
-			log("got config 0")
-			get_config() -- We don't want to call it more then we have to.
-			log("got config 1")
+		if loop_counter == 0 and name ~= nil then
+			get_config(name) -- We don't want to call it more then we have to.
 		end
 		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
-		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
-			local tags = config.CNSR.tags
-			local tags_by_end_time = config.CNSR.tags_by_end_time
+		if vlc.playlist.status()~="stopped" and config[name .. "tags"] and #config[name .. "tags"] ~= 0 then
+			local tags = config[name .. "tags"]
+			local tags_by_end_time = config[name .. "tags_by_end_time"]
 
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
@@ -268,18 +274,16 @@ end
 --[[
 this function reads configs from a file and sets the config parameter
 --]]
-function get_config()
-	config.CNSR = {}
+function get_config(name)
+	config[name .. "tags"] = json.decode(vlc.config.get("bookmark9") or "")
+	config[name .. "tags_by_end_time"] = json.decode(vlc.config.get("bookmark10") or "")
 
-	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
-	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
-
-	if config.CNSR.tags == nil then
-		config.CNSR.tags = {}
+	if config[name .. "tags"] == nil then
+		config[name .. "tags"] = {}
 	end
 
-	if config.CNSR.tags_by_end_time  == nil then
-		config.CNSR.tags_by_end_time  = {}
+	if config[name .. "tags_by_end_time"]  == nil then
+		config[name .. "tags_by_end_time"]  = {}
 	end
 end
 
