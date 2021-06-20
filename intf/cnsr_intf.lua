@@ -148,8 +148,9 @@ function looper()
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if loop_counter == 0 then
+			log("got config 0")
 			get_config() -- We don't want to call it more then we have to.
-			log("got config")
+			log("got config 1")
 		end
 		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
@@ -268,10 +269,17 @@ end
 this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
+	config.CNSR = {}
 
-	config = json.decode(vlc.config.get("bookmark10") or "")
-	if config == nil then
-		config = {}
+	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
+	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+
+	if config.CNSR.tags == nil then
+		config.CNSR.tags = {}
+	end
+
+	if config.CNSR.tags_by_end_time  == nil then
+		config.CNSR.tags_by_end_time  = {}
 	end
 end
 
