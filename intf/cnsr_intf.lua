@@ -19,8 +19,7 @@ tag_index = 1
 tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
-reverse = false
-done = false
+forward = false
 input = nil
 actions = {}
 -- end globals
@@ -150,31 +149,21 @@ function looper()
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if loop_counter == 0 then
 			get_config() -- We don't want to call it more then we have to.
+			log("got config")
 		end
 		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
-		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags and #config.CNSR.tags ~= 0 then
+		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
 			local tags_by_end_time = config.CNSR.tags_by_end_time
 
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
-			reverse = prev_time > current_time
 			local tag = get_current_tag(tags, tags_by_end_time)
 
-			while not done and current_time > tag.start_time do
-				if current_time < tag.end_time and tag.action ~= SHOW then
-					actions[tag.action].execute(tag)
-				end
-				done = tag_index == #tags
-				if not done then
-					if tag.action == SKIP then
-						tag = get_current_tag(tags, tags_by_end_time) --if we skipped back we need to rewind the index
-					else
-						tag_index = tag_index + 1
-						tag = tags[tag_index]
-					end
-				end
+			while tag and current_time > tag.start_time do
+				actions[tag.action].execute(tag)
+				tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
 			end
 			prev_time = current_time
 		end
@@ -199,7 +188,7 @@ tag_end: ending time of the tag
 this function shows the user the reason for the skip and the category that caused it.
 --]]
 function display_reason(reason_string, category, tag_end)
-	if tag_end - current_time > MINIMUM_DISPLAY_TIME and not reverse then
+	if tag_end - current_time > MINIMUM_DISPLAY_TIME and forward then
 		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
@@ -210,12 +199,14 @@ skip_end: the starting time of skip tag
 this function does the logic for skipping in the video.
 --]]
 function skip(skip_start, skip_end)
+	prev_time = current_time
 	local skip_length = skip_end - skip_start
-	if reverse then -- we went back in time, cut the duration of skip tag from timeline
+	if forward then
+		current_time = math.min(current_time + skip_length + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+	else -- we went back in time, cut the duration of skip tag from timeline
 		current_time = math.max(current_time - skip_length, 0)
-	else
-		current_time = math.min(current_time + skip_length + SKIP_SAFETY,vlc.input.item():duration()*MS_IN_SEC) --think if we want to!
 	end
+	update_actions()
 	vlc.var.set(input,"time", current_time)
 end
 
@@ -228,41 +219,39 @@ function get_num_relevant_tags(tags_by_end_time)
 		tag_by_end_time_index = tag_by_end_time_index - 1
 	end
 
-	while tag_by_end_time_index < #tags_by_end_time and current_time > tags_by_end_time[tag_by_end_time_index].end_time do
+	while tags_by_end_time[tag_by_end_time_index] and current_time > tags_by_end_time[tag_by_end_time_index].end_time do
 		tag_by_end_time_index = tag_by_end_time_index + 1
 	end
 
-	relevant_tags = #tags_by_end_time - tag_by_end_time_index
-	if current_time < tags_by_end_time[#tags_by_end_time].end_time then
-		relevant_tags = relevant_tags + 1
-	end
+	relevant_tags = #tags_by_end_time - tag_by_end_time_index + 1
 
 	return relevant_tags
 end
+
 
 --[[
 tags_by_end_time: all the tags ordered by ending time
 tags: all the tags sorted by starting time
 this function finds the next relevant tag (the next tag that should be executed)
 --]]
-function get_current_tag(tags, tags_by_end_time)
-	if reverse then
+function get_current_tag(tags, tags_by_end_time, prev_tag)
+	forward = prev_time <= current_time
+	if prev_tag and prev_tag.action ~= SKIP then
+		tag_index = tag_index + 1
+	elseif forward then
+		while tags[tag_index] and current_time > tags[tag_index].end_time do
+			tag_index = tag_index + 1
+		end
+	else
 		relevant_tags = get_num_relevant_tags(tags_by_end_time) --#(tags where current_time < tag.end_time)
 
-		relevant_tags_after_index = #tags - tag_index
-		if current_time < tags[tag_index].end_time  then
-			relevant_tags_after_index = relevant_tags_after_index + 1
-		end
+		relevant_tags_after_index = #tags - tag_index + 1
 		while relevant_tags_after_index < relevant_tags do
 			tag_index = tag_index - 1
 			if current_time < tags[tag_index].end_time  then
 				relevant_tags_after_index = relevant_tags_after_index + 1
 			end
 		end
-		done = false
-	end
-	while tag_index < #tags and current_time > tags[tag_index].end_time do
-		tag_index = tag_index + 1
 	end
 	return tags[tag_index]
 end
@@ -280,6 +269,9 @@ this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
 	config = json.decode(vlc.config.get("bookmark10"))
+	if config == nil then
+		config = {}
+	end
 end
 
 
