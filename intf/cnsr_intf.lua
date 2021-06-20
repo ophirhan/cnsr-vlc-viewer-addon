@@ -279,7 +279,7 @@ end
 this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
-	config = json.decode(vlc.config.get("bookmark10")) or ""
+	config = json.decode(vlc.config.get("bookmark10") or "")
 	if config == nil then
 		config = {}
 	end
