@@ -298,11 +298,7 @@ function strip_extension(uri)
 	return string.sub(uri, 0, index)
 end
 function get_file_name()
-	local uri = vlc.input.item():uri()
-	uri = vlc.strings.decode_uri(uri)
-	local index = string.find(uri, "[^\/]*$")
-	local index2 = string.find(uri, ".[^\.]*$")
-	return string.sub(uri, index, index2 - 1)
+	return vlc.input.item():name()
 end
 -----------------------------------------
 --[[
