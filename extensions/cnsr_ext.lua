@@ -85,9 +85,10 @@ function show_category_selection()
 		y = y + 1
 	end
 	dlg:add_label("Enter password:",1, y, 1, 1)
-	text_box = dlg:add_password("", 1, y+1, 1, 1)
-	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y+2, 1, 1)
+	text_box = dlg:add_password("", 1, y + 1, 1, 1)
+	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y + 2, 1, 1)
 	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y + 3, 1, 1)
+	pass_status = dlg:add_label('',1, y + 4, 1, 1)
 	dlg:show()
 end
 
@@ -113,64 +114,64 @@ function click_play()
 		value.action = dropdowns[idx]:get_value()
 	end
 	local check_password = text_box:get_text()
-	Log(check_password)
-	Log(pass_cfg["password"])
 	if check_password == pass_cfg["password"] then
 		Log("click play")
 		close_dlg()
 		load_and_set_tags()
+	else
+		pass_status:set_text("Invalid password!")
 	end
 end
 
---[[
-this function gets the uri of the movie and changes it to cnsr_uri
---]]
-function get_cnsr_uri()
+	--[[
+    this function gets the uri of the movie and changes it to cnsr_uri
+    --]]
+	function get_cnsr_uri()
 	if vlc.input.item() == nil then
-		return nil
+	return nil
 	end
 	local uri = vlc.input.item():uri()
 	uri = vlc.strings.decode_uri(uri)
 	local uri_sans_extension = strip_extension(uri)
 	return uri_sans_extension .. "cnsr"
-end
+	end
 
---[[
-this function is the main parser.
-it reads the cnsr file, parse its lines, inserts it into a table and returns it.
---]]
-function load_tags_from_file()
+	--[[
+    this function is the main parser.
+    it reads the cnsr file, parse its lines, inserts it into a table and returns it.
+    --]]
+	function load_tags_from_file()
 	local cnsr_uri = get_cnsr_uri()
 	if cnsr_uri == nil then
-		return nil
+	return nil
 	end
 	cnsr_file = io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
-		vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
-		return nil
+	vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
+	return nil
 	end
 	io.input(cnsr_file)
 
 	raw_tags ={}
 	for line in io.lines() do
-		table.insert(raw_tags, line_to_tag(line))
+	table.insert(raw_tags, line_to_tag(line))
 	end
 	io.close(cnsr_file)
 	cnsr_file = nil
 	collectgarbage()
 
 	return raw_tags
-end
+	end
 
---[[
-this function gets a line of cnsr file and returns is as a tag
-tag properties:
-start_time- start of the tag in micro seconds
-end_time- end of the tag in micro seconds
-category- the category of the tag (for example 1 for violence) (int)
- action- the action to take when viewing the tag (can be one of these: HIDE,SHOW,MUTE,SKIP)
---]]
-function line_to_tag(line)
+	--[[
+    this function gets a line of cnsr file and returns is as a tag
+    tag properties:
+    start_time- start of the tag in micro seconds
+    end_time- end of the tag in micro seconds
+    category- the category of the tag (for example 1 for violence) (int)
+     action- the action to take when viewing the tag (can be one of these: HIDE,SHOW,MUTE,SKIP)
+    --]]
+	function line_to_tag(line)
 	line = string.gsub(line," ","")
 	local times, category = string.match(line,"([^;]+);([^;]+)") -- maybe use find and sub instead of slow regex
 	local start_string, end_string = string.match(times,"([^-]+)-([^-]+)")
@@ -182,17 +183,17 @@ function line_to_tag(line)
 	tag.category = category
 	tag.action = action
 	return tag
-end
+	end
 
---[[
-this function loads tags from cnsr file and saves them into config file
---]]
-function load_and_set_tags()
+	--[[
+    this function loads tags from cnsr file and saves them into config file
+    --]]
+	function load_and_set_tags()
 	local name = get_file_name()
 	Log("load")
 	raw_tags = load_tags_from_file()
 	if raw_tags == nil then
-		return
+	return
 	end
 	Log("loaded")
 	cfg.tags = raw_tags
@@ -201,30 +202,30 @@ function load_and_set_tags()
 
 
 	for _, v in ipairs(cfg.tags_by_end_time) do
-		Log("start: " .. tostring(v.start_time/1000000))
-		Log("end: " .. tostring(v.end_time/1000000))
-		Log("description: " .. tostring(CATEGORIES[v.category].description))
-		Log("action: " .. tostring(options[v.action]))
+	Log("start: " .. tostring(v.start_time/1000000))
+	Log("end: " .. tostring(v.end_time/1000000))
+	Log("description: " .. tostring(CATEGORIES[v.category].description))
+	Log("action: " .. tostring(options[v.action]))
 	end
 	set_config(cfg.tags, name, 9)
 	set_config(cfg.tags_by_end_time, name, 10)
-end
+	end
 
---[[
-this function gets a string representing time (from this shape: hh:mm:ss,ms)
-and converts it to microseconds
---]]
-function hms_ms_to_us(time_string) -- microseconds
+	--[[
+    this function gets a string representing time (from this shape: hh:mm:ss,ms)
+    and converts it to microseconds
+    --]]
+	function hms_ms_to_us(time_string) -- microseconds
 	hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
 	h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
 	return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
-end
+	end
 
---[[
-this function is called only on the 1st activation of the extention
-it makes the user to define the interface and enable it.
---]]
-function create_dialog_S()
+	--[[
+    this function is called only on the 1st activation of the extention
+    it makes the user to define the interface and enable it.
+    --]]
+	function create_dialog_S()
 	dlg = vlc.dialog(descriptor().title .. " > SETTINGS")
 	cb_extraintf = dlg:add_check_box("Enable interface: ", true,1,1,1,1)
 	ti_luaintf = dlg:add_text_input(intf_script,2,1,2,1)
@@ -236,13 +237,13 @@ function create_dialog_S()
 	dlg:add_button("SAVE!", click_SAVE_settings,1,5,1,1)
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
 	lb_message = dlg:add_label("Current status: " .. (ti and "ENABLED" or "DISABLED") .. " " .. tostring(VLC_luaintf),1,6,3,1)
-end
+	end
 
---[[
-this function is called only on the 1st activation of the extention
-it makes the user to define the interface and enable it.
---]]
-function click_SAVE_settings()
+	--[[
+    this function is called only on the 1st activation of the extention
+    it makes the user to define the interface and enable it.
+    --]]
+	function click_SAVE_settings()
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
 	cfg["password"] = set_password:get_text()
 	cfg["hint"] = set_hint:get_text()
@@ -250,148 +251,148 @@ function click_SAVE_settings()
 	Log(cfg["hint"])
 	set_config(cfg, "passwords", 8)
 	if cb_extraintf:get_checked() then
-		if not ti then table.insert(t, "luaintf") end
-		vlc.config.set("lua-intf", ti_luaintf:get_text())
+	if not ti then table.insert(t, "luaintf") end
+	vlc.config.set("lua-intf", ti_luaintf:get_text())
 	else
-		if ti then table.remove(t, ti) end
+	if ti then table.remove(t, ti) end
 	end
 	vlc.config.set("extraintf", table.concat(t, ":"))
 
 	lb_message:set_text("Please restart VLC for changes to take effect!")
-end
+	end
 
---[[
-in every extention, a deactivate function is a must.
-when the extention dies, this function is called.
---]]
-function deactivate()
+	--[[
+    in every extention, a deactivate function is a must.
+    when the extention dies, this function is called.
+    --]]
+	function deactivate()
 	--if dlg then
 	--	dlg:hide()
 	--end
-end
+	end
 
 
-function close()
+	function close()
 	vlc.deactivate()
-end
+	end
 
 
-function menu()
+	function menu()
 	return {"Modify censor categories", "Retry loading cnsr file"}
-end
+	end
 
---[[
-this function closes a dialog and release its resources
---]]
-function close_dlg()
+	--[[
+    this function closes a dialog and release its resources
+    --]]
+	function close_dlg()
 	if dlg ~= nil then
-		dlg:hide()
+	dlg:hide()
 	end
 
 	dlg = nil
 	collectgarbage() --~ !important
-end
+	end
 
---[[
-this function is called when the user has changed the video
-it
---]]
-function input_changed()
+	--[[
+    this function is called when the user has changed the video
+    it
+    --]]
+	function input_changed()
 	load_and_set_tags()
-end
+	end
 
---[[
-use this function to print to console
---]]
-function Log(lm)
+	--[[
+    use this function to print to console
+    --]]
+	function Log(lm)
 	vlc.msg.info("[cnsr_ext] " .. lm)
-end
+	end
 
------------------------------------------
---[[
-this function gets an uri and strips it.
---]]
-function strip_extension(uri)
+	-----------------------------------------
+	--[[
+    this function gets an uri and strips it.
+    --]]
+	function strip_extension(uri)
 	uri = string.sub(uri,9)
 	local index = string.find(uri, ".[^\.]*$")
 	return string.sub(uri, 0, index)
-end
-function get_file_name()
+	end
+	function get_file_name()
 	if vlc.input.item() == nil then
-		return nil
+	return nil
 	end
 	return vlc.input.item():name()
-end
------------------------------------------
---[[
-this function gets configs in a file
---]]
-function get_config()
+	end
+	-----------------------------------------
+	--[[
+    this function gets configs in a file
+    --]]
+	function get_config()
 	local name = get_file_name()
 
 	config[name .. "tags"] = json.decode(vlc.config.get("bookmark9") or "")
 	config[name .. "tags_by_end_time"] = json.decode(vlc.config.get("bookmark10") or "")
 
 	if config[name .. "tags"] == nil then
-		config[name .. "tags"] = {}
+	config[name .. "tags"] = {}
 	end
 
 	if config[name .. "tags_by_end_time"]  == nil then
-		config[name .. "tags_by_end_time"]  = {}
+	config[name .. "tags_by_end_time"]  = {}
 	end
-end
+	end
 
---[[
-this function saves configs in a file
---]]
-function set_config(cfg_table, cfg_title, bookmark_num)
+	--[[
+    this function saves configs in a file
+    --]]
+	function set_config(cfg_table, cfg_title, bookmark_num)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
 	get_config()
 	config[cfg_title]=cfg_table
 	vlc.config.set("bookmark" .. tostring(bookmark_num), json.encode(cfg_table))
-end
+	end
 
-function SplitString(s, d) -- string, delimiter pattern
+	function SplitString(s, d) -- string, delimiter pattern
 	local t={}
 	local i=1
 	local ss, j, k
 	local b=false
 	while true do
-		j,k = string.find(s,d,i)
-		if j then
-			ss=string.sub(s,i,j-1)
-			i=k+1
-		else
-			ss=string.sub(s,i)
-			b=true
-		end
-		table.insert(t, ss)
-		if b then break end
+	j,k = string.find(s,d,i)
+	if j then
+	ss=string.sub(s,i,j-1)
+	i=k+1
+	else
+	ss=string.sub(s,i)
+	b=true
+	end
+	table.insert(t, ss)
+	if b then break end
 	end
 	return t
-end
+	end
 
-function VLC_intf_settings()
+	function VLC_intf_settings()
 	local VLC_extraintf = vlc.config.get("extraintf") -- enabled VLC interfaces
 	local VLC_luaintf = vlc.config.get("lua-intf") -- Lua Interface script name
 	local t={}
 	local ti=false
 	if VLC_extraintf then
-		t=SplitString(VLC_extraintf, ":")
-		for i,v in ipairs(t) do
-			if v=="luaintf" then
-				ti=i
-				break
-			end
-		end
+	t=SplitString(VLC_extraintf, ":")
+	for i,v in ipairs(t) do
+	if v=="luaintf" then
+	ti=i
+	break
+	end
+	end
 	end
 	return VLC_extraintf, VLC_luaintf, t, ti
-end
+	end
 
 
---TODOs:
+	--TODOs:
 
---Investigate saving/loading configurations to/from a file.
+	--Investigate saving/loading configurations to/from a file.
 
---Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
+	--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
