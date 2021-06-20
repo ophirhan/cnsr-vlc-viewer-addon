@@ -38,9 +38,10 @@ function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
 	pass_cfg = json.decode(vlc.config.get("bookmark8"))
-	if config and config.CNSR then
-		cfg = config.CNSR
-	end
+	-- TODO: dont know what to do with that line
+	--if config and config.CNSR then
+	--	cfg = config.CNSR
+	--end
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
 	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
 		trigger_menu(3)
