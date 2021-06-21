@@ -151,7 +151,7 @@ function looper()
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		
-		current_item = vlc.playlist.get(vlc.playlist.current()) -- if a new video was is showing we want to get the new config
+		current_item = vlc.playlist.get(vlc.playlist.current()) -- if a new video is playing, then we want to get the new config
 		if current_item ~= nil and current_uri ~= current_item.path then
 			current_uri = current_item.path
 			tag_by_end_time_index = 1
