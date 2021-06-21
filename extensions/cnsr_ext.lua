@@ -23,10 +23,10 @@ in every extention, a descriptor function is a must.
 this function describes the extention
 --]]
 function descriptor()
-	return { title = "cnsr" ;
-			 version = "0.1" ;
-			 author = "EEO" ;
-			 capabilities = {"menu", "input-listener"};
+    return { title = "cnsr" ;
+             version = "0.1" ;
+             author = "EEO" ;
+             capabilities = {"menu", "input-listener"};
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
 end
 
@@ -84,7 +84,7 @@ function show_category_selection()
 		y = y + 1
 	end
 	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y, 1, 1)
-	dlg:show()
+    dlg:show()
 end
 
 --[[
@@ -206,9 +206,9 @@ this function gets a string representing time (from this shape: hh:mm:ss,ms)
 and converts it to microseconds
 --]]
 function hms_ms_to_us(time_string) -- microseconds
-	hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
-	h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
-	return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
+		hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
+		h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
+		return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
 end
 
 --[[
@@ -266,12 +266,12 @@ end
 this function closes a dialog and release its resources
 --]]
 function close_dlg()
-	if dlg ~= nil then
-		dlg:hide()
-	end
+  if dlg ~= nil then
+    dlg:hide()
+  end
 
-	dlg = nil
-	collectgarbage() --~ !important
+  dlg = nil
+  collectgarbage() --~ !important
 end
 
 --[[
@@ -326,7 +326,7 @@ end
 --[[
 this function saves configs in a file
 --]]
-function set_config(cfg_table, cfg_title, bookmark_num)
+function set_config(cfg_table, cfg_title)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
 	get_config()
@@ -374,6 +374,6 @@ end
 
 --TODOs:
 
---Investigate saving/loading configurations to/from a file.
+	--Investigate saving/loading configurations to/from a file.
 
---Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
+	--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
