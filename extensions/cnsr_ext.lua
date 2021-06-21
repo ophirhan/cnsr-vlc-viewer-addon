@@ -9,13 +9,14 @@ SKIP = 2
 MUTE = 3
 HIDE = 4
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
+was_playing = false;
 local dlg
 
 -- todo: add epilepsy category
-CATEGORIES = { [1] = { description = "Violence", action=SKIP},
-			   [2] = {description = "Verbal abuse", action=SKIP},
-			   [3] =  {description = "Nudity", action=SKIP},
-			   [4] =  {description = "Alcohol and drug consumption", action=SKIP}}
+CATEGORIES = { [1] = { description = "violence", action=SKIP},
+			   [2] = {description = "verbal abuse", action=SKIP},
+			   [3] =  {description = "nudity", action=SKIP},
+			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
 -- defaults
 
 --[[
@@ -23,10 +24,10 @@ in every extention, a descriptor function is a must.
 this function describes the extention
 --]]
 function descriptor()
-	return { title = "cnsr" ;
-			 version = "0.1" ;
-			 author = "EEO" ;
-			 capabilities = {"menu", "input-listener"};
+    return { title = "cnsr" ;
+             version = "0.1" ;
+             author = "EEO" ;
+             capabilities = {"menu", "input-listener"};
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
 end
 
@@ -37,6 +38,7 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
+	pause_if_needed()
 	pass_cfg = json.decode(vlc.config.get("bookmark8"))
 	-- TODO: dont know what to do with that line
 	--if config and config.CNSR then
@@ -49,6 +51,16 @@ function activate()
 		trigger_menu(1)
 	end
 end
+
+
+function pause_if_needed()
+	if vlc.playlist.status() == "playing" then
+		Log("Paused the video")
+		vlc.playlist.pause()
+		was_playing = true
+	end
+end
+
 
 --[[
 dig_id: the id of the wanted dialog
@@ -123,6 +135,14 @@ function click_play()
 	end
 end
 
+function play_if_needed()
+	if was_playing then
+		Log("resumed playing the video")
+		vlc.playlist.play()
+		was_playing = false
+	end
+end
+
 --[[
 this function gets the uri of the movie and changes it to cnsr_uri
 --]]
@@ -189,7 +209,6 @@ end
 this function loads tags from cnsr file and saves them into config file
 --]]
 function load_and_set_tags()
-	local name = get_file_name()
 	Log("load")
 	raw_tags = load_tags_from_file()
 	if raw_tags == nil then
@@ -207,8 +226,8 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	set_config(cfg.tags, name, 9)
-	set_config(cfg.tags_by_end_time, name, 10)
+	set_config(cfg.tags, "CNSR", 9)
+	set_config(cfg.tags_by_end_time, "CNSR", 10)
 end
 
 --[[
@@ -216,9 +235,9 @@ this function gets a string representing time (from this shape: hh:mm:ss,ms)
 and converts it to microseconds
 --]]
 function hms_ms_to_us(time_string) -- microseconds
-	hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
-	h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
-	return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
+		hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
+		h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
+		return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
 end
 
 --[[
@@ -285,12 +304,12 @@ end
 this function closes a dialog and release its resources
 --]]
 function close_dlg()
-	if dlg ~= nil then
-		dlg:hide()
-	end
+  if dlg ~= nil then
+    dlg:hide()
+  end
 
-	dlg = nil
-	collectgarbage() --~ !important
+  dlg = nil
+  collectgarbage() --~ !important
 end
 
 --[[
@@ -317,28 +336,22 @@ function strip_extension(uri)
 	local index = string.find(uri, ".[^\.]*$")
 	return string.sub(uri, 0, index)
 end
-function get_file_name()
-	if vlc.input.item() == nil then
-		return nil
-	end
-	return vlc.input.item():name()
-end
 -----------------------------------------
 --[[
 this function gets configs in a file
 --]]
 function get_config()
-	local name = get_file_name()
+	config.CNSR = {}
 
-	config[name .. "tags"] = json.decode(vlc.config.get("bookmark9") or "")
-	config[name .. "tags_by_end_time"] = json.decode(vlc.config.get("bookmark10") or "")
+	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
+	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
 
-	if config[name .. "tags"] == nil then
-		config[name .. "tags"] = {}
+	if config.CNSR.tags == nil then
+		config.CNSR.tags = {}
 	end
 
-	if config[name .. "tags_by_end_time"]  == nil then
-		config[name .. "tags_by_end_time"]  = {}
+	if config.CNSR.tags_by_end_time  == nil then
+		config.CNSR.tags_by_end_time  = {}
 	end
 end
 
@@ -348,7 +361,6 @@ this function saves configs in a file
 function set_config(cfg_table, cfg_title, bookmark_num)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
-	get_config()
 	config[cfg_title]=cfg_table
 	vlc.config.set("bookmark" .. tostring(bookmark_num), json.encode(cfg_table))
 end
@@ -393,6 +405,6 @@ end
 
 --TODOs:
 
---Investigate saving/loading configurations to/from a file.
+	--Investigate saving/loading configurations to/from a file.
 
---Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
+	--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
