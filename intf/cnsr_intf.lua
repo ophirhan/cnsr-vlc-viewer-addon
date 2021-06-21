@@ -196,16 +196,15 @@ end
 
 --[[
 skip_start: the starting time of skip tag
-skip_end: the starting time of skip tag
+skip_end: the ending time of skip tag
 this function does the logic for skipping in the video.
 --]]
 function skip(skip_start, skip_end)
 	prev_time = current_time
-	local skip_length = skip_end - skip_start
 	if forward then
-		current_time = math.min(current_time + skip_length + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+		current_time = math.min(skip_end + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
-		current_time = math.max(current_time - skip_length, 0)
+		current_time = math.max(skip_start, 0)
 	end
 	update_actions()
 	vlc.var.set(input,"time", current_time)
