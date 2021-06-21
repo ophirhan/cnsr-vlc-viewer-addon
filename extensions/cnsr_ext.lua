@@ -1,6 +1,6 @@
 --some globals:
-json = require 'dkjson'
-require 'common'
+json = require ('dkjson')
+require ('common')
 config={}
 cfg={}
 dropdowns = {}
@@ -117,7 +117,6 @@ this function gets the uri of the movie and changes it to cnsr_uri
 --]]
 function get_cnsr_uri()
 	if vlc.input.item() == nil then
-		set_config(cfg, "CNSR")
 		return nil
 	end
 	local uri = vlc.input.item():uri()
@@ -196,7 +195,8 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	set_config(cfg, "CNSR")
+	set_config(cfg.tags, "CNSR", 9)
+	set_config(cfg.tags_by_end_time, "CNSR", 10)
 end
 
 --[[ 
@@ -293,27 +293,36 @@ this function gets an uri and strips it.
 --]]
 function strip_extension(uri)
 	uri = string.sub(uri,9)
-	i = string.find(uri, ".[^\.]*$")
-	return string.sub(uri, 0, i)
+	local index = string.find(uri, ".[^\.]*$")
+	return string.sub(uri, 0, index)
 end
-
 -----------------------------------------
---[[ 
+--[[
 this function gets configs in a file
 --]]
 function get_config()
-	config = json.decode(vlc.config.get("bookmark10"))
+	config.CNSR = {}
+
+	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
+	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+
+	if config.CNSR.tags == nil then
+		config.CNSR.tags = {}
+	end
+
+	if config.CNSR.tags_by_end_time  == nil then
+		config.CNSR.tags_by_end_time  = {}
+	end
 end
 
 --[[ 
 this function saves configs in a file
 --]]
-function set_config(cfg_table, cfg_title)
+function set_config(cfg_table, cfg_title, bookmark_num)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
-	get_config()
 	config[cfg_title]=cfg_table
-	vlc.config.set("bookmark10", json.encode(config))
+	vlc.config.set("bookmark" .. tostring(bookmark_num), json.encode(cfg_table))
 end
 
 function SplitString(s, d) -- string, delimiter pattern

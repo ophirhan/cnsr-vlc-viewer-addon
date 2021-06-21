@@ -92,7 +92,7 @@ function actions.skip.execute(tag)
 	display_reason("skipped", tag.category, tag.end_time)
 end
 
-actions.skip.update = skip();
+actions.skip.update = nothing;
 
 table.insert(actions, actions.skip) --2
 -- end skip
@@ -161,6 +161,7 @@ function looper()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
 			local tag = get_current_tag(tags, tags_by_end_time)
+
 			while tag and current_time > tag.start_time do
 				actions[tag.action].execute(tag)
 				tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
@@ -253,7 +254,6 @@ function get_current_tag(tags, tags_by_end_time, prev_tag)
 			end
 		end
 	end
-	log(tag_index,1)
 	return tags[tag_index]
 end
 
@@ -284,4 +284,4 @@ function get_config()
 end
 
 
-looper()
+looper() -- starter
