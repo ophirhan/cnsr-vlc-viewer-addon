@@ -30,8 +30,6 @@ function set_memory(key, val)
     end
 
     vlc.var.set(vlc.object.playlist(), key, val)
-
-    vlc.var.create(vlc.object.playlist(), key, val)
 end
 
 function get_memory(key)
