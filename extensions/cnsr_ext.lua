@@ -9,6 +9,7 @@ SKIP = 2
 MUTE = 3
 HIDE = 4
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
+was_playing = false;
 local dlg
 
 -- todo: add epilepsy category
@@ -40,6 +41,7 @@ function activate()
 	if vlc.playlist.status() == "playing" then
 		Log("Paused the video")
 		vlc.playlist.pause()
+		was_playing = true
 	end
 	if config and config.CNSR then
 		cfg = config.CNSR
@@ -112,7 +114,11 @@ function click_play()
 		value.action = dropdowns[idx]:get_value()
 	end
 	Log("click play")
-	vlc.playlist.play()
+	if was_playing then
+		Log("resumed playing the video")
+		vlc.playlist.play()
+		was_playing = false
+	end
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_and_set_tags()
 end
