@@ -153,6 +153,8 @@ function looper()
 		current_item = vlc.playlist.get(vlc.playlist.current()) -- if a new video was is showing we want to get the new config
 		if current_item ~= nil and current_uri ~= current_item.path then
 			current_uri = current_item.path
+			tag_by_end_time_index = 1
+			tag_index = 1
 			loop_counter = 0
 			log("new video")
 		end
