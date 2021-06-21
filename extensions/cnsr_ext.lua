@@ -38,11 +38,7 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
-	if vlc.playlist.status() == "playing" then
-		Log("Paused the video")
-		vlc.playlist.pause()
-		was_playing = true
-	end
+	pause_if_needed()
 	if config and config.CNSR then
 		cfg = config.CNSR
 	end
@@ -53,6 +49,16 @@ function activate()
 		trigger_menu(1)
 	end
 end
+
+
+function pause_if_needed()
+	if vlc.playlist.status() == "playing" then
+		Log("Paused the video")
+		vlc.playlist.pause()
+		was_playing = true
+	end
+end
+
 
 --[[ 
 dig_id: the id of the wanted dialog
@@ -114,13 +120,17 @@ function click_play()
 		value.action = dropdowns[idx]:get_value()
 	end
 	Log("click play")
+	play_if_needed()
+	close_dlg() --add option to reopen dialog and reload tags according to new filters
+	load_and_set_tags()
+end
+
+function play_if_needed()
 	if was_playing then
 		Log("resumed playing the video")
 		vlc.playlist.play()
 		was_playing = false
 	end
-	close_dlg() --add option to reopen dialog and reload tags according to new filters
-	load_and_set_tags()
 end
 
 --[[ 
