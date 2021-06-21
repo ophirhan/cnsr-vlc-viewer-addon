@@ -4,6 +4,7 @@ require ('common')
 config={}
 cfg={}
 dropdowns = {}
+age_restriction_dropdown = nil
 SHOW = 1
 SKIP = 2
 MUTE = 3
@@ -16,6 +17,9 @@ CATEGORIES = { [1] = { description = "violence", action=SKIP},
 			   [2] = {description = "verbal abuse", action=SKIP},
 			   [3] =  {description = "nudity", action=SKIP},
 			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
+AGE_RESTRICTION = 'age_restriction'
+
+
 -- defaults
 
 --[[ 
@@ -68,6 +72,8 @@ end
 -- the user selects the wanted action when censoring is needed 
 options = {"Show", "Skip", "Mute", "Hide"}
 
+age_options = {'G' , 'PG13', 'R', 'X'}
+
 --[[ 
 this function creates a category dialog(the main dialog)
 the dialog contains 4 lists of actions, 4 labels to describe the categories and one "apply" button
@@ -77,12 +83,16 @@ function show_category_selection()
 	dlg = vlc.dialog("Category selection")
 	local y = 1
 	local x = 1
+	dlg:add_label(AGE_RESTRICTION, 1, y, 1, 1)
+	dlg:add_button("set by parental guidence", click_play, x +3, y, 2, 1)
+	age_restriction_dropdown = create_drop_down(x-1, y, age_options)
+	
 	for idx, value in ipairs(CATEGORIES) do
-		dlg:add_label(value.description, 1, y, 1, 1)
-		dropdowns[idx] = create_drop_down(x, y)
+		dlg:add_label(value.description, 1, y+1, 1, 1)
+		dropdowns[idx] = create_drop_down(x, y+1, options)
 		y = y + 1
 	end
-	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y, 1, 1)
+	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y+2, 1, 1)
     dlg:show()
 end
 
@@ -91,9 +101,9 @@ x: row position
 y: col position
 this function creats a dropdown list of options in location (x,y) and returns it
 --]]
-function create_drop_down(x, y)
+function create_drop_down(x, y, dropdown_options)
 	local dropdown = dlg:add_dropdown(x + 2, y, 2, 1)
-	for idx, word in ipairs(options) do
+	for idx, word in ipairs(dropdown_options) do
 		dropdown:add_value(word, idx)
 	end
 	return dropdown
