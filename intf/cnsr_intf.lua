@@ -1,4 +1,5 @@
 json = require ('dkjson')
+Memory = require ('cnsr_memory')
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 -- constants
@@ -144,15 +145,11 @@ it runs all the time in the background of VLC, finds the relevant tag and execut
 --]]
 function looper()
 	local next_loop_time = vlc.misc.mdate()
-	local loop_counter = 0
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
-		if loop_counter == 0 then
-			log("got config 0")
-			get_config() -- We don't want to call it more then we have to.
-			log("got config 1")
+		if Memory.get_written() then -- config invocation callback
+			get_config()
 		end
-		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
 			local tags_by_end_time = config.CNSR.tags_by_end_time
@@ -269,10 +266,11 @@ end
 this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
-	config.CNSR = {}
+	config = json.decode(Memory.get_config_string())
 
-	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
-	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+	if config.CNSR == nil then
+		config.CNSR = {}
+	end
 
 	if config.CNSR.tags == nil then
 		config.CNSR.tags = {}
