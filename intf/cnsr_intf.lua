@@ -204,7 +204,7 @@ function skip(skip_start, skip_end)
 	if forward then
 		current_time = math.min(skip_end + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
-		current_time = math.max(skip_start, 0)
+		current_time = math.max(skip_start- MS_IN_SEC*5, 0)
 	end
 	update_actions()
 	vlc.var.set(input,"time", current_time)
