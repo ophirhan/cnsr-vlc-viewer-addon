@@ -183,6 +183,9 @@ function load_tags_from_file()
 		return nil
 	end
 
+	io.close(cnsr_file)
+	cnsr_file = io.open(cnsr_uri,"r")
+
 	io.input(cnsr_file)
 
 	raw_tags ={}
