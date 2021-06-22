@@ -158,7 +158,7 @@ function looper()
 			tag_index = 1
 			loop_counter = 0
 			log("new video")
-			vlc.misc.mwait(vlc.misc.mdate() +) -- wait for cnsr_ext to finish parsing the new cnsr file
+			vlc.misc.mwait(vlc.misc.mdate() +SLEEP_WHILE_PARSING) -- wait for cnsr_ext to finish parsing the new cnsr file
 		end
 		
 		if loop_counter == 0 then
