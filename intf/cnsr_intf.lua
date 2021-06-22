@@ -150,6 +150,8 @@ function looper()
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if Memory.get_written() then -- config invocation callback
 			get_config()
+			tag_index = 1
+			tag_by_end_time_index = 1
 		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
@@ -280,6 +282,5 @@ function get_config()
 		config.CNSR.tags_by_end_time  = {}
 	end
 end
-
 
 looper() -- starter
