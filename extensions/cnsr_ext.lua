@@ -143,9 +143,9 @@ function load_tags_from_file()
 		return nil
 	end
 
-	-- Amir's addition
 	if not valid_cnsr_file(cnsr_file) then
 		vlc.osd.message("cnsr file bad format", nil, "bottom-right")
+		Log("cnsr file isn't valid")
 		return nil
 	end
 
@@ -175,8 +175,9 @@ end
 --[[
 this function checks that the format of the file is a cnsr format + the tag is of a legal class
 --]]
-function valid_cnsr_file(file)
-	for line in io.lines(file) do
+function valid_cnsr_file(cnsr_file)
+	io.input(cnsr_file)
+	for line in io.lines() do
 		if not valid_tag(line) then return false end
 		local start_time, end_time = string.match(line,"([^-]+)-([^-]+)")
 		if start_time == nil or end_time == nil then return false end
