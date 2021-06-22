@@ -5,7 +5,6 @@ os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 -- constants
 config={}
 MS_IN_SEC =1000000
-SLEEP_WHILE_PARSING=2*MS_IN_SEC
 FRAME_INTERVAL = 30000
 SKIP_SAFETY = 10000
 MINIMUM_DISPLAY_TIME = 2000000
@@ -150,10 +149,9 @@ function looper()
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if Memory.get_written() then -- config invocation callback
-      tag_index = 1
-      tag_by_end_time_index = 1
 			get_config()
-
+			tag_index = 1
+      			tag_by_end_time_index = 1
 		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
