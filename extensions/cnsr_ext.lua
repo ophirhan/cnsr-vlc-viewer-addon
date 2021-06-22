@@ -273,7 +273,7 @@ function click_SAVE_settings()
 	cfg["hint"] = set_hint:get_text()
 	Log(cfg["password"])
 	Log(cfg["hint"])
-	set_config(cfg, "passwords", 8)
+	vlc.config.set("bookmark8", json.encode(cfg))
 	if cb_extraintf:get_checked() then
 		if not ti then table.insert(t, "luaintf") end
 		vlc.config.set("lua-intf", ti_luaintf:get_text())
