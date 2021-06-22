@@ -53,6 +53,10 @@ function activate()
 	end
 end
 
+--[[ 
+this function pauses the video if the user opened the cnsr menu while the video was playing,
+	and updates the global value was_playing in order to act accordingly after closing the menu.
+--]]
 
 function pause_if_needed()
 	if vlc.playlist.status() == "playing" then
@@ -139,6 +143,9 @@ function click_play()
 	end
 end
 
+--[[ 
+this function checks wheather we need to resume playing the video after the cnsr menu is closed.
+--]]
 function play_if_needed()
 	if was_playing then
 		Log("resumed playing the video")
