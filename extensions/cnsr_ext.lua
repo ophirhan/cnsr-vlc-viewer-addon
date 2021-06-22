@@ -164,8 +164,9 @@ function click_play()
 	end
 end
 
---[[ 
-todo
+--[[
+when the user taps the "restrict_age" button, insert the wanted actions inside CATEGORIES from the dropdown
+and apply restriction age according to the configuration
 --]]
 function click_restrict_age()
 	_,age = age_restriction_dropdown:get_value()
