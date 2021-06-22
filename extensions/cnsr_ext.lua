@@ -158,6 +158,7 @@ end
 --[[
 this function gets the uri of the movie and changes it to cnsr_uri
 --]]
+
 function get_cnsr_uri()
 	if vlc.input.item() == nil then
 		return nil
@@ -182,6 +183,16 @@ function load_tags_from_file()
 		vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
 		return nil
 	end
+
+	if not valid_cnsr_file(cnsr_file) then
+		vlc.osd.message("cnsr file bad format", nil, "bottom-right")
+		Log("cnsr file isn't valid")
+		return nil
+	end
+
+	io.close(cnsr_file)
+	cnsr_file = io.open(cnsr_uri,"r")
+
 	io.input(cnsr_file)
 
 	raw_tags ={}
@@ -196,6 +207,32 @@ function load_tags_from_file()
 end
 
 --[[
+this function checks that the tag of the specific line in the file is valid
+--]]
+function valid_tag(line)
+	return string.sub(line, -1) == '1' or  string.sub(line, -1) == '2' or string.sub(line, -1) == '3' or
+					string.sub(line, -1) == '4'
+end
+
+
+
+--[[
+this function checks that the format of the file is a cnsr format + the tag is of a legal class
+--]]
+function valid_cnsr_file(cnsr_file)
+	io.input(cnsr_file)
+	for line in io.lines() do
+		if not valid_tag(line) then return false end
+		local start_time, end_time = string.match(line,"([^-]+)-([^-]+)")
+		if start_time == nil or end_time == nil then return false end
+		pat_for_start = "%d%d:%d%d:%d%d,%d%d%d"
+		pat_for_end = "%d%d:%d%d:%d%d,%d%d%d; %d"
+		if string.match(start_time,pat_for_start) == nil or string.match(end_time,pat_for_end) == nil then return false
+		end
+	end
+	return true
+end
+--[[ 
 this function gets a line of cnsr file and returns is as a tag
 tag properties:
 start_time- start of the tag in micro seconds
