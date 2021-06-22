@@ -2,26 +2,38 @@ json = require ('dkjson')
 Memory = require ('cnsr_memory')
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
+function protect(tbl)
+	return setmetatable({}, {
+		__index = tbl,
+		__newindex = function(t, key, value)
+			error("attempting to change constant " ..
+					tostring(key) .. " to " .. tostring(value), 2)
+		end
+	})
+end
+
+constants = {
+	MS_IN_SEC =1000000,
+	SKIP=2,
+	FRAME_INTERVAL = 30000,
+	SKIP_SAFETY = 10000,
+	MINIMUM_DISPLAY_TIME = 2000000,
+	GET_CONFIG_INTERVAL = 500,
+	DESCRIPTIONS = { [1] = "violence",
+					 [2] = "verbal abuse",
+					 [3] =  "nudity",
+					 [4] =  "alcohol and drug consumption"}
+}
 -- constants
 config={}
-MS_IN_SEC =1000000
-FRAME_INTERVAL = 30000
-SKIP_SAFETY = 10000
-MINIMUM_DISPLAY_TIME = 2000000
-GET_CONFIG_INTERVAL = 500
-DESCRIPTIONS = { [1] = "violence",
-				 [2] = "verbal abuse",
-				 [3] =  "nudity",
-				 [4] =  "alcohol and drug consumption"}
+constants = protect(constants)
 -- end constants
-
 -- globals
 tag_index = 1
 tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
-SKIP=2
 input = nil
 actions = {}
 -- end globals
@@ -158,7 +170,7 @@ function looper()
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
-			local tag = get_current_tag(tags, tags_by_end_time)
+			local tag = get_current_tag(tags, tags_by_end_time,nil)
 
 			while tag and current_time > tag.start_time do
 				actions[tag.action].execute(tag)
@@ -166,7 +178,7 @@ function looper()
 			end
 			prev_time = current_time
 		end
-		next_loop_time = next_loop_time + FRAME_INTERVAL
+		next_loop_time = next_loop_time + constants.FRAME_INTERVAL
 		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(input, "fps")?
 	end
 end
@@ -187,8 +199,8 @@ tag_end: ending time of the tag
 this function shows the user the reason for the skip and the category that caused it.
 --]]
 function display_reason(reason_string, category, tag_end)
-	if tag_end - current_time > MINIMUM_DISPLAY_TIME and forward then
-		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
+	if tag_end - current_time > constants.MINIMUM_DISPLAY_TIME and forward then
+		vlc.osd.message(reason_string .. " " .. constants.DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
@@ -201,7 +213,8 @@ function skip(skip_start, skip_end)
 	prev_time = current_time
 	local skip_length = skip_end - skip_start
 	if forward then
-		current_time = math.min(current_time + skip_length + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+		skip_length=skip_end-math.max(skip_start,current_time)
+		current_time = math.min(current_time + skip_length + constants.SKIP_SAFETY, vlc.input.item():duration() * constants.MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
 		current_time = math.max(current_time - skip_length, 0)
 	end
@@ -235,15 +248,15 @@ this function finds the next relevant tag (the next tag that should be executed)
 --]]
 function get_current_tag(tags, tags_by_end_time, prev_tag)
 	forward = prev_time <= current_time
-	if prev_tag and prev_tag.action ~= SKIP then
+	if prev_tag~=nil and prev_tag.action ~= constants.SKIP then
 		tag_index = tag_index + 1
+		log("prev_tag")
 	elseif forward then
 		while tags[tag_index] and current_time > tags[tag_index].end_time do
 			tag_index = tag_index + 1
 		end
 	else
 		relevant_tags = get_num_relevant_tags(tags_by_end_time) --#(tags where current_time < tag.end_time)
-
 		relevant_tags_after_index = #tags - tag_index + 1
 		while relevant_tags_after_index < relevant_tags do
 			tag_index = tag_index - 1
@@ -281,6 +294,8 @@ function get_config()
 		config.CNSR.tags_by_end_time  = {}
 	end
 end
+
+
 
 
 looper() -- starter
