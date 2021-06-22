@@ -48,7 +48,7 @@ function activate()
 	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
 		trigger_menu(3)
 	else
-		trigger_menu(3)
+		trigger_menu(1)
 	end
 end
 
