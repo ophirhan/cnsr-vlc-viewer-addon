@@ -1,4 +1,5 @@
 json = require ('dkjson')
+Memory = require ('cnsr_memory')
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 -- constants
@@ -20,6 +21,7 @@ tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
+SKIP=2
 input = nil
 actions = {}
 -- end globals
@@ -144,15 +146,11 @@ it runs all the time in the background of VLC, finds the relevant tag and execut
 --]]
 function looper()
 	local next_loop_time = vlc.misc.mdate()
-	local loop_counter = 0
 	while true do
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
-		if loop_counter == 0 then
-			log("got config 0")
-			get_config() -- We don't want to call it more then we have to.
-			log("got config 1")
+		if Memory.get_written() then -- config invocation callback
+			get_config()
 		end
-		loop_counter = (loop_counter + 1) % GET_CONFIG_INTERVAL
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
 			local tags_by_end_time = config.CNSR.tags_by_end_time
@@ -196,16 +194,15 @@ end
 
 --[[
 skip_start: the starting time of skip tag
-skip_end: the starting time of skip tag
+skip_end: the ending time of skip tag
 this function does the logic for skipping in the video.
 --]]
 function skip(skip_start, skip_end)
 	prev_time = current_time
-	local skip_length = skip_end - skip_start
 	if forward then
-		current_time = math.min(current_time + skip_length + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+		current_time = math.min(skip_end + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
-		current_time = math.max(current_time - skip_length, 0)
+		current_time = math.max(skip_start- MS_IN_SEC*5, 0)
 	end
 	update_actions()
 	vlc.var.set(input,"time", current_time)
@@ -269,10 +266,11 @@ end
 this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
-	config.CNSR = {}
+	config = json.decode(Memory.get_config_string())
 
-	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
-	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+	if config.CNSR == nil then
+		config.CNSR = {}
+	end
 
 	if config.CNSR.tags == nil then
 		config.CNSR.tags = {}

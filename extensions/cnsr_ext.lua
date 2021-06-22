@@ -1,6 +1,7 @@
 --some globals:
 json = require ("dkjson")
 require ("common")
+Memory = require ('cnsr_memory')
 config={}
 cfg={}
 dropdowns = {}
@@ -60,6 +61,7 @@ function pause_if_needed()
 		was_playing = true
 	end
 end
+
 
 
 --[[
@@ -125,10 +127,12 @@ function click_play()
 	for idx, value in ipairs(CATEGORIES) do
 		value.action = dropdowns[idx]:get_value()
 	end
+
 	local check_password = text_box:get_text()
 	if check_password == pass_cfg["password"] then
 		Log("click play")
 		close_dlg()
+	  play_if_needed()
 		load_and_set_tags()
 	else
 		pass_status:set_text("Invalid password!")
@@ -142,6 +146,7 @@ function play_if_needed()
 		was_playing = false
 	end
 end
+
 
 --[[
 this function gets the uri of the movie and changes it to cnsr_uri
@@ -226,8 +231,8 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	set_config(cfg.tags, "CNSR", 9)
-	set_config(cfg.tags_by_end_time, "CNSR", 10)
+
+	set_config(cfg, "CNSR")
 end
 
 --[[
@@ -341,10 +346,15 @@ end
 this function gets configs in a file
 --]]
 function get_config()
-	config.CNSR = {}
+	config = json.decode(Memory.get_config_string())
 
-	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
-	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+	if config == nil then -- todo write config to an external file for later loads/use bookmarkN as caching mechanizm
+		config = {}
+	end
+
+	if config.CNSR == nil then
+		config.CNSR = {}
+	end
 
 	if config.CNSR.tags == nil then
 		config.CNSR.tags = {}
@@ -358,11 +368,12 @@ end
 --[[
 this function saves configs in a file
 --]]
-function set_config(cfg_table, cfg_title, bookmark_num)
+function set_config(cfg_table, cfg_title)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
 	config[cfg_title]=cfg_table
-	vlc.config.set("bookmark" .. tostring(bookmark_num), json.encode(cfg_table))
+
+	Memory.set_config_string(json.encode(config))
 end
 
 function SplitString(s, d) -- string, delimiter pattern
