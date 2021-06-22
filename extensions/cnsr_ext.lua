@@ -17,9 +17,17 @@ CATEGORIES = { [1] = { description = "violence", action=SKIP},
 			   [2] = {description = "verbal abuse", action=SKIP},
 			   [3] =  {description = "nudity", action=SKIP},
 			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
-AGE_RESTRICTION = 'age_restriction'
+AGE_RESTRICTIONS = {}
+AGE_RESTRICTIONS['G'] = {[1]= {"Skip", "Show", "Mute", "Hide"},[2]= {"Skip", "Show", "Mute", "Hide"},[3]= {"Skip", "Show", "Mute", "Hide"},[4]= {"Skip", "Show", "Mute", "Hide"}}
+AGE_RESTRICTIONS['PG13'] = {[1]= {"Skip", "Show", "Mute", "Hide"},[2]= {"Mute", "Show", "Skip", "Hide"},[3]= {"Skip", "Show", "Mute", "Hide"},[4]= {"Hide", "Show", "Mute", "Skip"}}
+AGE_RESTRICTIONS['R'] = {[1]= {"Show", "Skip", "Mute", "Hide"},[2]= {"Show", "Skip", "Mute", "Hide"},[3]= {"Hide", "Show", "Mute", "Skip"},[4]= {"Show", "Skip", "Mute", "Hide"}}
+AGE_RESTRICTIONS['X'] = {[1]= {"Show", "Skip", "Mute", "Hide"},[2]= {"Show", "Skip", "Mute", "Hide"},[3]={"Show", "Skip", "Mute", "Hide"},[4]= {"Show", "Skip", "Mute", "Hide"}}
 
-
+ACTION_TO_ID = {}
+ACTION_TO_ID['Show'] = 1
+ACTION_TO_ID['Skip'] = 2
+ACTION_TO_ID['Mute'] = 3
+ACTION_TO_ID['Hide'] = 4
 -- defaults
 
 --[[ 
@@ -83,8 +91,8 @@ function show_category_selection()
 	dlg = vlc.dialog("Category selection")
 	local y = 1
 	local x = 1
-	dlg:add_label(AGE_RESTRICTION, 1, y, 1, 1)
-	dlg:add_button("set by parental guidence", click_play, x +3, y, 2, 1)
+	dlg:add_label("age restriction", 1, y, 1, 1)
+	dlg:add_button("set by parental guidence", click_restrict_age, x +3, y, 2, 1)
 	age_restriction_dropdown = create_drop_down(x-1, y, age_options)
 	
 	for idx, value in ipairs(CATEGORIES) do
@@ -115,12 +123,29 @@ close the dialog and call load_and_set_tags(start reading from the cnsr file)
 --]]
 function click_play()
 	for idx, value in ipairs(CATEGORIES) do
-		value.action = dropdowns[idx]:get_value()
+		_, action_name = dropdowns[idx]:get_value()
+		value.action = ACTION_TO_ID[action_name]
 	end
 	Log("click play")
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_and_set_tags()
 end
+
+--[[ 
+
+--]]
+function click_restrict_age()
+	_,age = age_restriction_dropdown:get_value()
+	x = 1
+	y = 2
+	for idx, value in ipairs(CATEGORIES) do
+		dlg:del_widget(dropdowns[idx])
+		dropdowns[idx] = create_drop_down(x, y, AGE_RESTRICTIONS[age][idx])
+		y=y+1
+	end
+	Log("click restrict age")
+end
+
 
 --[[ 
 this function gets the uri of the movie and changes it to cnsr_uri
