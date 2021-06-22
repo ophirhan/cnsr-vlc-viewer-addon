@@ -39,7 +39,7 @@ function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
 	pause_if_needed()
-	pass_cfg = json.decode(vlc.config.get("bookmark8"))
+	pass_cfg = json.decode(vlc.config.get("bookmark8") or "")
 	-- TODO: dont know what to do with that line
 	--if config and config.CNSR then
 	--	cfg = config.CNSR
@@ -48,7 +48,7 @@ function activate()
 	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
 		trigger_menu(3)
 	else
-		trigger_menu(1)
+		trigger_menu(3)
 	end
 end
 
@@ -248,7 +248,7 @@ function create_dialog_S()
 	dlg = vlc.dialog(descriptor().title .. " > SETTINGS")
 	cb_extraintf = dlg:add_check_box("Enable interface: ", true,1,1,1,1)
 	ti_luaintf = dlg:add_text_input(intf_script,2,1,2,1)
-	dlg:add_label("Choose your password:",1, 2, 1, 1)
+	dlg:add_label("Choose your password: Leave empty if you do not want any password.",1, 2, 1, 1)
 	dlg:add_label("Password:",1, 3, 1, 1)
 	set_password = dlg:add_password("", 2, 3, 3, 1)
 	dlg:add_label("Password hint:",1, 4, 1, 1)
