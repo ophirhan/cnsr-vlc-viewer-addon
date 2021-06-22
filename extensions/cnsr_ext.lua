@@ -170,6 +170,14 @@ function get_cnsr_uri()
 end
 
 --[[
+This function prints both to the VLC message and to the log
+--]]
+function print_to_vlc_and_log(message)
+	vlc.osd.message(message, nil, "bottom-right")
+	Log(message)
+end
+
+--[[
 this function is the main parser.
 it reads the cnsr file, parse its lines, inserts it into a table and returns it.
 --]]
@@ -180,13 +188,12 @@ function load_tags_from_file()
 	end
 	cnsr_file = io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
-		vlc.osd.message("Failed to load cnsr file", nil, "bottom-right")
+		print_to_vlc_and_log("Failed to load cnsr file")
 		return nil
 	end
 
 	if not valid_cnsr_file(cnsr_file) then
-		vlc.osd.message("cnsr file bad format", nil, "bottom-right")
-		Log("cnsr file isn't valid")
+		print_to_vlc_and_log("cnsr file bad format")
 		return nil
 	end
 
