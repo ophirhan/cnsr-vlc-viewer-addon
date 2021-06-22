@@ -1,6 +1,7 @@
 --some globals:
 json = require ('dkjson')
 require ('common')
+Memory = require ('cnsr_memory')
 config={}
 cfg={}
 dropdowns = {}
@@ -9,6 +10,7 @@ SKIP = 2
 MUTE = 3
 HIDE = 4
 intf_script = "cnsr_intf" -- Location: \lua\intf\cnsr_intf.lualocal dlg = nil
+was_playing = false;
 local dlg
 
 -- todo: add epilepsy category
@@ -37,6 +39,7 @@ this function runs first. it starts the dialog and loads configs.
 function activate()
 	os.setlocale("C", "all") -- just in case
 	get_config()
+	pause_if_needed()
 	if config and config.CNSR then
 		cfg = config.CNSR
 	end
@@ -47,6 +50,16 @@ function activate()
 		trigger_menu(1)
 	end
 end
+
+
+function pause_if_needed()
+	if vlc.playlist.status() == "playing" then
+		Log("Paused the video")
+		vlc.playlist.pause()
+		was_playing = true
+	end
+end
+
 
 --[[ 
 dig_id: the id of the wanted dialog
@@ -108,8 +121,17 @@ function click_play()
 		value.action = dropdowns[idx]:get_value()
 	end
 	Log("click play")
+	play_if_needed()
 	close_dlg() --add option to reopen dialog and reload tags according to new filters
 	load_and_set_tags()
+end
+
+function play_if_needed()
+	if was_playing then
+		Log("resumed playing the video")
+		vlc.playlist.play()
+		was_playing = false
+	end
 end
 
 --[[ 
@@ -195,8 +217,8 @@ function load_and_set_tags()
 		Log("description: " .. tostring(CATEGORIES[v.category].description))
 		Log("action: " .. tostring(options[v.action]))
 	end
-	set_config(cfg.tags, "CNSR", 9)
-	set_config(cfg.tags_by_end_time, "CNSR", 10)
+
+	set_config(cfg, "CNSR")
 end
 
 --[[ 
@@ -301,10 +323,15 @@ end
 this function gets configs in a file
 --]]
 function get_config()
-	config.CNSR = {}
+	config = json.decode(Memory.get_config_string())
 
-	config.CNSR.tags = json.decode(vlc.config.get("bookmark9") or "")
-	config.CNSR.tags_by_end_time = json.decode(vlc.config.get("bookmark10") or "")
+	if config == nil then -- todo write config to an external file for later loads/use bookmarkN as caching mechanizm
+		config = {}
+	end
+
+	if config.CNSR == nil then
+		config.CNSR = {}
+	end
 
 	if config.CNSR.tags == nil then
 		config.CNSR.tags = {}
@@ -318,11 +345,12 @@ end
 --[[ 
 this function saves configs in a file
 --]]
-function set_config(cfg_table, cfg_title, bookmark_num)
+function set_config(cfg_table, cfg_title)
 	if not cfg_table then cfg_table={} end
 	if not cfg_title then cfg_title=descriptor().title end
 	config[cfg_title]=cfg_table
-	vlc.config.set("bookmark" .. tostring(bookmark_num), json.encode(cfg_table))
+
+	Memory.set_config_string(json.encode(config))
 end
 
 function SplitString(s, d) -- string, delimiter pattern
