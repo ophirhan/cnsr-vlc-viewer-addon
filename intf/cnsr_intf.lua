@@ -21,6 +21,7 @@ tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
+SKIP=2
 input = nil
 actions = {}
 -- end globals
