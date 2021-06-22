@@ -152,7 +152,6 @@ end
 this function gets the uri of the movie and changes it to cnsr_uri
 --]]
 
--- foo test
 function get_cnsr_uri()
 	if vlc.input.item() == nil then
 		return nil
