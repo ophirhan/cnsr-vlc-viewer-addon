@@ -5,6 +5,7 @@ Memory = require ('cnsr_memory')
 config={}
 cfg={}
 dropdowns = {}
+age_restriction_dropdown = nil
 SHOW = 1
 SKIP = 2
 MUTE = 3
@@ -18,6 +19,17 @@ CATEGORIES = { [1] = { description = "violence", action=SKIP},
 			   [2] = {description = "verbal abuse", action=SKIP},
 			   [3] =  {description = "nudity", action=SKIP},
 			   [4] =  {description = "alcohol and drug consumption", action=SKIP}}
+AGE_RESTRICTIONS = {}
+AGE_RESTRICTIONS['G'] = {[1]= {"Skip", "Show", "Mute", "Hide"},[2]= {"Skip", "Show", "Mute", "Hide"},[3]= {"Skip", "Show", "Mute", "Hide"},[4]= {"Skip", "Show", "Mute", "Hide"}}
+AGE_RESTRICTIONS['PG13'] = {[1]= {"Skip", "Show", "Mute", "Hide"},[2]= {"Mute", "Show", "Skip", "Hide"},[3]= {"Skip", "Show", "Mute", "Hide"},[4]= {"Hide", "Show", "Mute", "Skip"}}
+AGE_RESTRICTIONS['R'] = {[1]= {"Show", "Skip", "Mute", "Hide"},[2]= {"Show", "Skip", "Mute", "Hide"},[3]= {"Hide", "Show", "Mute", "Skip"},[4]= {"Show", "Skip", "Mute", "Hide"}}
+AGE_RESTRICTIONS['X'] = {[1]= {"Show", "Skip", "Mute", "Hide"},[2]= {"Show", "Skip", "Mute", "Hide"},[3]={"Show", "Skip", "Mute", "Hide"},[4]= {"Show", "Skip", "Mute", "Hide"}}
+
+ACTION_TO_ID = {}
+ACTION_TO_ID['Show'] = 1
+ACTION_TO_ID['Skip'] = 2
+ACTION_TO_ID['Mute'] = 3
+ACTION_TO_ID['Hide'] = 4
 -- defaults
 
 --[[
@@ -88,6 +100,9 @@ end
 -- the user selects the wanted action when censoring is needed
 options = {"Show", "Skip", "Mute", "Hide"}
 
+age_options = {'G' , 'PG13', 'R', 'X'}
+
+
 --[[
 this function creates a category dialog(the main dialog)
 the dialog contains 4 lists of actions, 4 labels to describe the categories and one "apply" button
@@ -97,14 +112,19 @@ function show_category_selection()
 	dlg = vlc.dialog("Category selection")
 	local y = 1
 	local x = 1
+	dlg:add_label("age restriction", 1, y, 1, 1)
+	dlg:add_button("set by parental guidence", click_restrict_age, x +3, y, 2, 1)
+	age_restriction_dropdown = create_drop_down(x-1, y, age_options)
+	
 	for idx, value in ipairs(CATEGORIES) do
-		dlg:add_label(value.description, 1, y, 1, 1)
-		dropdowns[idx] = create_drop_down(x, y)
+		dlg:add_label(value.description, 1, y+1, 1, 1)
+		dropdowns[idx] = create_drop_down(x, y+1, options)
 		y = y + 1
 	end
-	dlg:add_label("Enter password:",1, y, 1, 1)
-	text_box = dlg:add_password("", 1, y + 1, 1, 1)
-	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y + 2, 1, 1)
+  
+	dlg:add_label("Enter password:",1, y+1, 1, 1)
+	text_box = dlg:add_password("", 1, y + 2, 1, 1)
+	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y + 3, 1, 1)
 	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y + 3, 1, 1)
 	pass_status = dlg:add_label('',1, y + 4, 1, 1)
 	dlg:show()
@@ -115,9 +135,9 @@ x: row position
 y: col position
 this function creats a dropdown list of options in location (x,y) and returns it
 --]]
-function create_drop_down(x, y)
+function create_drop_down(x, y, dropdown_options)
 	local dropdown = dlg:add_dropdown(x + 2, y, 2, 1)
-	for idx, word in ipairs(options) do
+	for idx, word in ipairs(dropdown_options) do
 		dropdown:add_value(word, idx)
 	end
 	return dropdown
@@ -129,7 +149,8 @@ close the dialog and call load_and_set_tags(start reading from the cnsr file)
 --]]
 function click_play()
 	for idx, value in ipairs(CATEGORIES) do
-		value.action = dropdowns[idx]:get_value()
+		_, action_name = dropdowns[idx]:get_value()
+		value.action = ACTION_TO_ID[action_name]
 	end
 
 	local check_password = text_box:get_text()
@@ -142,6 +163,22 @@ function click_play()
 		pass_status:set_text("Invalid password!")
 	end
 end
+
+--[[ 
+todo
+--]]
+function click_restrict_age()
+	_,age = age_restriction_dropdown:get_value()
+	x = 1
+	y = 2
+	for idx, value in ipairs(CATEGORIES) do
+		dlg:del_widget(dropdowns[idx])
+		dropdowns[idx] = create_drop_down(x, y, AGE_RESTRICTIONS[age][idx])
+		y=y+1
+	end
+	Log("click restrict age")
+end
+
 
 --[[ 
 this function checks wheather we need to resume playing the video after the cnsr menu is closed.
@@ -158,7 +195,6 @@ end
 --[[
 this function gets the uri of the movie and changes it to cnsr_uri
 --]]
-
 function get_cnsr_uri()
 	if vlc.input.item() == nil then
 		return nil
