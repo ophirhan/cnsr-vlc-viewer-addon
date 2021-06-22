@@ -3,8 +3,8 @@ os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
 -- constants
 config={}
-SLEEP_WHILE_PARSING=2
 MS_IN_SEC =1000000
+SLEEP_WHILE_PARSING=2*MS_IN_SEC
 FRAME_INTERVAL = 30000
 SKIP_SAFETY = 10000
 MINIMUM_DISPLAY_TIME = 2000000
@@ -158,7 +158,7 @@ function looper()
 			tag_index = 1
 			loop_counter = 0
 			log("new video")
-			sleep(SLEEP_WHILE_PARSING) -- wait for cnsr_ext to finish parsing the new cnsr file
+			vlc.misc.mwait(vlc.misc.mdate() +) -- wait for cnsr_ext to finish parsing the new cnsr file
 		end
 		
 		if loop_counter == 0 then
@@ -295,14 +295,6 @@ function get_config()
 	if config.CNSR.tags_by_end_time  == nil then
 		config.CNSR.tags_by_end_time  = {}
 	end
-end
-
--- a sleep for n seconds (lua does not have its own sleep option)
-function sleep(n)
-  local t = os.clock()
-  while os.clock() - t <= n do
-    -- nothing
-  end
 end
 
 looper() -- starter
