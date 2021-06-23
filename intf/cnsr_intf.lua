@@ -131,6 +131,9 @@ actions.hide.update= function() check_deactivate(actions.hide) end
 function actions.hide.activate()
 	actions.hide.hide_filter = vlc.object.vout()
 	vlc.var.create(actions.hide.hide_filter, "contrast", 0)
+	vlc.var.create(actions.hide.hide_filter, "brightness", 0)
+	vlc.var.create(actions.hide.hide_filter, "saturation", 0)
+	vlc.var.create(actions.hide.hide_filter, "gamma", 0)
 	vlc.var.set(actions.hide.hide_filter, "video-filter", "adjust")
 	check_collision()
 end
