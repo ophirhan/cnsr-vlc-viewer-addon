@@ -22,6 +22,7 @@ current_time = 0
 prev_time = 0
 forward = false
 SKIP=2
+MUTE = 3
 input = nil
 actions = {}
 -- end globals
@@ -54,7 +55,13 @@ else it activates it
 --]]
 function check_activate(action, tag)
 	if action.activated then
-		action.end_time = math.max(action.end_time, tag.end_time)
+		if tag.action == MUTE then
+			local temp = actions.mute.prev_volume
+			action.activate()
+			actions.mute.prev_volume = temp
+		else
+			action.end_time = math.max(action.end_time, tag.end_time)
+		end
 	else
 		action.start_time = tag.start_time
 		action.end_time = tag.end_time
@@ -160,9 +167,10 @@ function looper()
 			update_actions()
 			local tag = get_current_tag(tags, tags_by_end_time)
 
-			while tag and current_time > tag.start_time do
+			--while tag and current_time > tag.start_time do
+			if current_time > tag.start_time then
 				actions[tag.action].execute(tag)
-				tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
+				--tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
 			end
 			prev_time = current_time
 		end
