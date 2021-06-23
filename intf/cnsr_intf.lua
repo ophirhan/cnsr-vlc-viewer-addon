@@ -56,9 +56,7 @@ else it activates it
 function check_activate(action, tag)
 	if action.activated then
 		if tag.action == MUTE then
-			local temp = actions.mute.prev_volume
-			action.activate()
-			actions.mute.prev_volume = temp
+			vlc.volume.set(0)
 		else
 			action.end_time = math.max(action.end_time, tag.end_time)
 		end
