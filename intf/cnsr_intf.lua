@@ -11,7 +11,7 @@ function protect(tbl)
 		end
 	})
 end
-
+-- constants
 constants = {
 	MS_IN_SEC =1000000,
 	SKIP=2,
@@ -24,7 +24,6 @@ constants = {
 					 [3] =  "nudity",
 					 [4] =  "alcohol and drug consumption"}
 }
--- constants
 config={}
 constants = protect(constants)
 -- end constants
@@ -35,7 +34,6 @@ tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
-SKIP=2
 input = nil
 actions = {}
 -- end globals
@@ -185,7 +183,7 @@ function looper()
 			end
 			prev_time = current_time
 		end
-		next_loop_time = next_loop_time + FRAME_INTERVAL
+		next_loop_time = next_loop_time + constants.FRAME_INTERVAL
 		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(input, "fps")?
 	end
 end
@@ -206,8 +204,8 @@ tag_end: ending time of the tag
 this function shows the user the reason for the skip and the category that caused it.
 --]]
 function display_reason(reason_string, category, tag_end)
-	if tag_end - current_time > MINIMUM_DISPLAY_TIME and forward then
-		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
+	if tag_end - current_time > constants.MINIMUM_DISPLAY_TIME and forward then
+		vlc.osd.message(reason_string .. " " .. constants.DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
@@ -219,9 +217,9 @@ this function does the logic for skipping in the video.
 function skip(skip_start, skip_end)
 	prev_time = current_time
 	if forward then
-		current_time = math.min(skip_end + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+		current_time = math.min(skip_end + constants.SKIP_SAFETY, vlc.input.item():duration() * constants.MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
-		current_time = math.max(skip_start- MS_IN_SEC*5, 0)
+		current_time = math.max(skip_start- constants.MS_IN_SEC*5, 0)
 	end
 	update_actions()
 	vlc.var.set(input,"time", current_time)
@@ -253,7 +251,7 @@ this function finds the next relevant tag (the next tag that should be executed)
 --]]
 function get_current_tag(tags, tags_by_end_time, prev_tag)
 	forward = prev_time <= current_time
-	if prev_tag and prev_tag.action ~= SKIP then
+	if prev_tag and prev_tag.action ~= constants.SKIP then
 		tag_index = tag_index + 1
 	elseif forward then
 		while tags[tag_index] and current_time > tags[tag_index].end_time do
