@@ -21,7 +21,7 @@ Supported OS: Windows, Linux and Mac OS.
 3. Using the installation file <strong>(currently only available for Mac OS)</strong>:
     1. Open your terminal, cd into CNSR repo and run `python3 scripts/install.py`, you'll need to enter your administer's password
     2. A link between the project's files and VLC repository is generated. For example, a file named `cnsr_intf.lua` that points to `cnsr-vlc-viewer-addon/intf/cnsr_intf.lua` will be created in `/Applications/VLC.app/Contents/MacOS/share/lua/intf`. Every change that will be made in `cnsr-vlc-viewer-addon` will be also made to the installed extension.
-    3. You can now skip the rest of the below instructions and the "Setting up the project for development" section.
+    3. You can now jump to instruction #6, and also skip the entire "Setting up the project for development" section.
 			       
 4. If you want the add-on to be available for all the users of the 
     computer, access the `lua` folder using these paths:
