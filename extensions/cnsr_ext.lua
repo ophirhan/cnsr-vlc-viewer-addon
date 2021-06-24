@@ -58,7 +58,7 @@ function activate()
 	--	cfg = config.CNSR
 	--end
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
-	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
+	if not ti or VLC_luaintf ~= intf_script or type(pass_cfg) ~= "table" then
 		trigger_menu(3)
 	else
 		trigger_menu(1)
@@ -123,7 +123,7 @@ function show_category_selection()
 	end
   
 	dlg:add_label("Enter password:",1, y+1, 1, 1)
-	text_box = dlg:add_password("", 1, y + 2, 1, 1)
+	text_box = dlg:add_text_input("", 1, y + 2, 1, 1)
 	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y + 3, 1, 1)
 	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y + 3, 1, 1)
 	pass_status = dlg:add_label('',1, y + 4, 1, 1)
@@ -343,7 +343,7 @@ function create_dialog_S()
 	ti_luaintf = dlg:add_text_input(intf_script,2,1,2,1)
 	dlg:add_label("Choose your password: Leave empty if you do not want any password.",1, 2, 1, 1)
 	dlg:add_label("Password:",1, 3, 1, 1)
-	set_password = dlg:add_password("", 2, 3, 3, 1)
+	set_password = dlg:add_text_input("", 2, 3, 3, 1)
 	dlg:add_label("Password hint:",1, 4, 1, 1)
 	set_hint = dlg:add_text_input("", 2, 4, 3, 1)
 	dlg:add_button("SAVE!", click_SAVE_settings,1,5,1,1)
