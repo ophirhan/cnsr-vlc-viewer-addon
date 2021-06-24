@@ -40,9 +40,13 @@ action: one of SHOW, HIDE, MUTE, SKIP
 this function checks if the action is no longer relevant(passed it or )
 --]]
 function check_deactivate(action)
-	if action.activated and (current_time > action.end_time or current_time < action.start_time) then
-		action.deactivate()
-		action.activated = false
+	if action.activated then
+		if (current_time > action.end_time or current_time < action.start_time) then
+			action.deactivate()
+			action.activated = false
+		elseif action == actions.mute then
+			vlc.volume.set(0)
+		end
 	end
 end
 
@@ -55,11 +59,7 @@ else it activates it
 --]]
 function check_activate(action, tag)
 	if action.activated then
-		if tag.action == MUTE then
-			vlc.volume.set(0)
-		else
-			action.end_time = math.max(action.end_time, tag.end_time)
-		end
+		action.end_time = math.max(action.end_time, tag.end_time)
 	else
 		action.start_time = tag.start_time
 		action.end_time = tag.end_time
@@ -159,16 +159,14 @@ function looper()
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
 			local tags_by_end_time = config.CNSR.tags_by_end_time
-
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
 			local tag = get_current_tag(tags, tags_by_end_time)
 
-			--while tag and current_time > tag.start_time do
-			if current_time > tag.start_time then
+			while tag and current_time > tag.start_time do
 				actions[tag.action].execute(tag)
-				--tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
+				tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
 			end
 			prev_time = current_time
 		end
