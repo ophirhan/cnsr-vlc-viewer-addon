@@ -28,12 +28,14 @@ constants = {
 config={}
 constants = protect(constants)
 -- end constants
+
 -- globals
 tag_index = 1
 tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
+SKIP=2
 input = nil
 actions = {}
 -- end globals
@@ -143,6 +145,9 @@ actions.hide.update= function() check_deactivate(actions.hide) end
 function actions.hide.activate()
 	actions.hide.hide_filter = vlc.object.vout()
 	vlc.var.create(actions.hide.hide_filter, "contrast", 0)
+	vlc.var.create(actions.hide.hide_filter, "brightness", 0)
+	vlc.var.create(actions.hide.hide_filter, "saturation", 0)
+	vlc.var.create(actions.hide.hide_filter, "gamma", 0)
 	vlc.var.set(actions.hide.hide_filter, "video-filter", "adjust")
 	check_collision()
 end
@@ -162,6 +167,8 @@ function looper()
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if Memory.get_written() then -- config invocation callback
 			get_config()
+			tag_index = 1
+			tag_by_end_time_index = 1
 		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
@@ -170,7 +177,7 @@ function looper()
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
-			local tag = get_current_tag(tags, tags_by_end_time,nil)
+			local tag = get_current_tag(tags, tags_by_end_time)
 
 			while tag and current_time > tag.start_time do
 				actions[tag.action].execute(tag)
@@ -178,7 +185,7 @@ function looper()
 			end
 			prev_time = current_time
 		end
-		next_loop_time = next_loop_time + constants.FRAME_INTERVAL
+		next_loop_time = next_loop_time + FRAME_INTERVAL
 		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(input, "fps")?
 	end
 end
@@ -199,14 +206,14 @@ tag_end: ending time of the tag
 this function shows the user the reason for the skip and the category that caused it.
 --]]
 function display_reason(reason_string, category, tag_end)
-	if tag_end - current_time > constants.MINIMUM_DISPLAY_TIME and forward then
-		vlc.osd.message(reason_string .. " " .. constants.DESCRIPTIONS[category], nil, "bottom-right")
+	if tag_end - current_time > MINIMUM_DISPLAY_TIME and forward then
+		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
 --[[
 skip_start: the starting time of skip tag
-skip_end: the starting time of skip tag
+skip_end: the ending time of skip tag
 this function does the logic for skipping in the video.
 --]]
 function skip(skip_start, skip_end)
@@ -246,15 +253,15 @@ this function finds the next relevant tag (the next tag that should be executed)
 --]]
 function get_current_tag(tags, tags_by_end_time, prev_tag)
 	forward = prev_time <= current_time
-	if prev_tag~=nil and prev_tag.action ~= constants.SKIP then
+	if prev_tag and prev_tag.action ~= SKIP then
 		tag_index = tag_index + 1
-		log("prev_tag")
 	elseif forward then
 		while tags[tag_index] and current_time > tags[tag_index].end_time do
 			tag_index = tag_index + 1
 		end
 	else
 		relevant_tags = get_num_relevant_tags(tags_by_end_time) --#(tags where current_time < tag.end_time)
+
 		relevant_tags_after_index = #tags - tag_index + 1
 		while relevant_tags_after_index < relevant_tags do
 			tag_index = tag_index - 1
@@ -292,8 +299,5 @@ function get_config()
 		config.CNSR.tags_by_end_time  = {}
 	end
 end
-
-
-
 
 looper() -- starter

@@ -36,7 +36,8 @@ Supported OS: Windows, Linux and Mac OS.
 5. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
-6. Click save to set the cnsr interface script as an extra interface.
+6. Choose your password and your password's hint, please choose a password you will remember and your child will not know.
+   Click save to set the cnsr interface script as an extra interface.
 7. Restart VLC
 8. Start the Extension again in VLC menu
     - `View > cnsr` for Windows/Linux.
@@ -66,7 +67,7 @@ Then the cnsr file should be: <br>
 `/foo/bar/myvid.cnsr`
 
 #### NOTICE
-- Currently there is an issue with directories that have underscore or spaces, so please try to avoid them
+- Currently there is an issue with directories that have hebrew in their path, so try to avoid them
 
 
 # Setting up the project for development
