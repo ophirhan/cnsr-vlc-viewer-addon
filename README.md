@@ -67,7 +67,7 @@ Then the cnsr file should be: <br>
 `/foo/bar/myvid.cnsr`
 
 #### NOTICE
-- Currently there is an issue with directories that have underscore or spaces, so please try to avoid them
+- Currently there is an issue with directories that have hebrew in their path, so try to avoid them
 
 
 # Setting up the project for development
