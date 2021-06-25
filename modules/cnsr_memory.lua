@@ -19,6 +19,14 @@ function Memory.get_written()
     return get_memory("written")
 end
 
+function Memory.get_key(key)
+    return get_memory(key)
+end
+
+function Memory.set_key(key,val)
+    set_memory(key,val)
+end
+
 function set_memory(key, val)
     local value = get_memory(key)
     if value == val then
