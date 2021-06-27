@@ -167,7 +167,6 @@ function looper()
 			get_config()
 			tag_index = 1
 			tag_by_end_time_index = 1
-            --offset = Memory.get_key("offset")
 		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags

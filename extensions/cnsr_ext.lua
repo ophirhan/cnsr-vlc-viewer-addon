@@ -128,10 +128,7 @@ function show_category_selection()
 
 	dlg:add_label("set offset:",1, y + 4,1,1)
 
-	key=Memory.get_key("offset")
-	if key == nil then
-		key=0
-	end
+	key = get_memory("offset") or 0
 	offset =dlg:add_text_input(tostring(key),1, y + 5,1,1)
 
 	button_apply = dlg:add_button("Apply and save",click_play, x + 1, y + 6, 1, 1)
@@ -161,10 +158,7 @@ function click_play()
 		_, action_name = dropdowns[idx]:get_value()
 		value.action = ACTION_TO_ID[action_name]
 	end
-	offset_num = tonumber(tostring(offset:get_text()))
-	if offset_num == nil then
-		offset_num=0
-	end
+    offset_num = tonumber(tostring(offset:get_text())) or 0
 	local check_password = text_box:get_text()
 	if check_password == pass_cfg["password"] then
 		Log("click play")
@@ -323,7 +317,7 @@ function load_and_set_tags()
 	cfg.tags = raw_tags
 	cfg.offset=offset_num
 	cfg.tags_by_end_time = common.table_copy(raw_tags)
-	Memory.set_key("offset",offset_num)
+    set_memory("offset",offset_num)
 	table.sort(cfg.tags_by_end_time, function(a, b) return a.end_time < b.end_time end)
 
 
