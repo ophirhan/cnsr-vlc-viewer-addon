@@ -37,10 +37,10 @@ in every extention, a descriptor function is a must.
 this function describes the extention
 --]]
 function descriptor()
-    return { title = "cnsr" ;
-             version = "0.1" ;
-             author = "EEO" ;
-             capabilities = {"menu", "input-listener"};
+	return { title = "cnsr" ;
+			 version = "0.1" ;
+			 author = "EEO" ;
+			 capabilities = {"menu", "input-listener"};
 			 url =  "https://github.com/ophirhan/cnsr-vlc-viewer-addon"}
 end
 
@@ -57,6 +57,7 @@ function activate()
 	--if config and config.CNSR then
 	--	cfg = config.CNSR
 	--end
+	Log("activate")
 	local VLC_extraintf, VLC_luaintf, t, ti = VLC_intf_settings()
 	if not ti or VLC_luaintf~=intf_script or pass_cfg == nil then
 		trigger_menu(3)
@@ -65,7 +66,7 @@ function activate()
 	end
 end
 
---[[ 
+--[[
 this function pauses the video if the user opened the cnsr menu while the video was playing,
 	and updates the global value was_playing in order to act accordingly after closing the menu.
 --]]
@@ -115,20 +116,25 @@ function show_category_selection()
 	dlg:add_label("age restriction", 1, y, 1, 1)
 	dlg:add_button("set by parental guidence", click_restrict_age, x +3, y, 2, 1)
 	age_restriction_dropdown = create_drop_down(x-1, y, age_options)
-	
+
 	for idx, value in ipairs(CATEGORIES) do
 		dlg:add_label(value.description, 1, y+1, 1, 1)
 		dropdowns[idx] = create_drop_down(x, y+1, options)
 		y = y + 1
 	end
-  
 	dlg:add_label("Enter password:",1, y+1, 1, 1)
 	text_box = dlg:add_password("", 1, y + 2, 1, 1)
 	dlg:add_label("Hint: " .. pass_cfg["hint"],1, y + 3, 1, 1)
-	button_apply = dlg:add_button("Apply and save", click_play, x + 1, y + 3, 1, 1)
-	pass_status = dlg:add_label('',1, y + 4, 1, 1)
+
+	dlg:add_label("set offset:",1, y + 4,1,1)
+
+	key = get_memory("offset") or 0
+	offset =dlg:add_text_input(tostring(key),1, y + 5,1,1)
+
+	button_apply = dlg:add_button("Apply and save",click_play, x + 1, y + 6, 1, 1)
+	pass_status = dlg:add_label('',1, y + 7, 1, 1)
 	dlg:show()
-end
+	end
 
 --[[
 x: row position
@@ -152,12 +158,12 @@ function click_play()
 		_, action_name = dropdowns[idx]:get_value()
 		value.action = ACTION_TO_ID[action_name]
 	end
-
+    offset_num = tonumber(tostring(offset:get_text())) or 0
 	local check_password = text_box:get_text()
 	if check_password == pass_cfg["password"] then
 		Log("click play")
 		close_dlg()
-	  play_if_needed()
+		play_if_needed()
 		load_and_set_tags()
 	else
 		pass_status:set_text("Invalid password!")
@@ -181,7 +187,7 @@ function click_restrict_age()
 end
 
 
---[[ 
+--[[
 this function checks wheather we need to resume playing the video after the cnsr menu is closed.
 --]]
 function play_if_needed()
@@ -255,7 +261,7 @@ this function checks that the tag of the specific line in the file is valid
 --]]
 function valid_tag(line)
 	return string.sub(line, -1) == '1' or  string.sub(line, -1) == '2' or string.sub(line, -1) == '3' or
-					string.sub(line, -1) == '4'
+			string.sub(line, -1) == '4'
 end
 
 
@@ -276,7 +282,7 @@ function valid_cnsr_file(cnsr_file)
 	end
 	return true
 end
---[[ 
+--[[
 this function gets a line of cnsr file and returns is as a tag
 tag properties:
 start_time- start of the tag in micro seconds
@@ -309,7 +315,9 @@ function load_and_set_tags()
 	end
 	Log("loaded")
 	cfg.tags = raw_tags
+	cfg.offset=offset_num
 	cfg.tags_by_end_time = common.table_copy(raw_tags)
+    set_memory("offset",offset_num)
 	table.sort(cfg.tags_by_end_time, function(a, b) return a.end_time < b.end_time end)
 
 
@@ -328,9 +336,9 @@ this function gets a string representing time (from this shape: hh:mm:ss,ms)
 and converts it to microseconds
 --]]
 function hms_ms_to_us(time_string) -- microseconds
-		hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
-		h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
-		return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
+	hms , ms = string.match(time_string, "([^,]+),([^,]+)") -- maybe use find and sub instead of slow regex
+	h, m ,s = string.match(hms, "([^:]+):([^:]+):([^:]+)")
+	return (tonumber(h)*3600000 + tonumber(m)*60000 + tonumber(s)*1000 + tonumber(ms)) * 1000
 end
 
 --[[
@@ -397,12 +405,12 @@ end
 this function closes a dialog and release its resources
 --]]
 function close_dlg()
-  if dlg ~= nil then
-    dlg:hide()
-  end
+	if dlg ~= nil then
+		dlg:hide()
+	end
 
-  dlg = nil
-  collectgarbage() --~ !important
+	dlg = nil
+	collectgarbage() --~ !important
 end
 
 --[[
@@ -450,6 +458,9 @@ function get_config()
 
 	if config.CNSR.tags_by_end_time  == nil then
 		config.CNSR.tags_by_end_time  = {}
+	end
+	if config.CNSR.offset == nil then
+		config.CNSR.offset = 0
 	end
 end
 
@@ -504,6 +515,6 @@ end
 
 --TODOs:
 
-	--Investigate saving/loading configurations to/from a file.
+--Investigate saving/loading configurations to/from a file.
 
-	--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
+--Lua README titles to explore: "Objects" (player, libvlc), "Renderer discovery"
