@@ -21,7 +21,6 @@ def install_non_windows(vlc_path):
     for module in MODULES:
         vlc_loc = f"{vlc_path}/{module}"
         os.remove(vlc_loc)
-        print(f"{os.getcwd()}/{module}")
         os.symlink(src=f"{os.getcwd()}/../{module}", dst=vlc_loc)
 
 
