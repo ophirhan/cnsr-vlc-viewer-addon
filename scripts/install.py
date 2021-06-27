@@ -5,7 +5,7 @@ import subprocess
 import os
 import logging
 
-logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 LINUX = "linux"
 OSX = "darwin"
