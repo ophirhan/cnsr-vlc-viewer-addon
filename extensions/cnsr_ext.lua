@@ -260,8 +260,8 @@ end
 this function checks that the tag of the specific line in the file is valid
 --]]
 function valid_tag(line)
-	return string.sub(line, -1) == '1' or  string.sub(line, -1) == '2' or string.sub(line, -1) == '3' or
-			string.sub(line, -1) == '4'
+	local category = tonumber(SplitString(line,";")[2]) or -1
+    return category<5 and category>0
 end
 
 
