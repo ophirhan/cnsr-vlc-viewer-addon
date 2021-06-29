@@ -48,9 +48,29 @@ function test_line_to_tag()
     print("passed!")
 end
 
+function test_get_cnsr_uri()
+    --creating a mock:
+    vlc = {}
+    vlc.input = {}
+    uries={"file:\\\\\\C:\\Program Files\\VideoLAN\\VLC\\lua\\modules\\cnsr_memory.mp4"
+    ,"file:\\\\\\ophir.blabla","file:\\\\\\ophir.mpeg"}
+    expected= {"C:\\Program Files\\VideoLAN\\VLC\\lua\\modules\\cnsr_memory.cnsr"
+    ,"ophir.cnsr","ophir.cnsr"}
+    item = {}
+    vlc.strings ={}
+    local i=1
+    function item.uri() return uries[i] end
+    function vlc.input.item()return item end
+    function vlc.strings.decode_uri(st) return st end
+    for j=1,#uries do
+        result = get_cnsr_uri()
+        assert(result==expected[i],"error: got "..result)
+        i = i+1
+    end
+    print("passed!")
+end
 
 -- class TestMyStuff
-
 print("---tests for functions in cnsr_ext---")
 print("checking valid_tag_function:")
 test_valid_tag()
@@ -58,3 +78,5 @@ print("checking hms_ms_to_us function:")
 test_hms_ms_to_us()
 print("checking line_to_tag function:")
 test_line_to_tag()
+print("checking get_cnsr_uri function")
+test_get_cnsr_uri()
