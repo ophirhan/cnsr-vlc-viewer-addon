@@ -17,8 +17,13 @@ Supported OS: Windows, Linux and Mac OS.
 1. If you don't have VLC installed on your computer, install it now from [VLC](https://www.videolan.org/)
 2. download the repository: press on the "CODE" green button, and choose the option: "Download zip".
 ![Screenshot_061221_040915_PM](https://user-images.githubusercontent.com/19567966/121777049-c8d80580-cb98-11eb-9ac7-6db63a0c518f.jpg)
+
+3. Using the installation file <strong>(currently only available for Mac OS)</strong>:
+    1. Open your terminal, cd into CNSR repo and run `python3 scripts/install.py`, you'll need to enter your administer's password
+    2. A link between the project's files and VLC repository is generated. For example, a file named `cnsr_intf.lua` that points to `cnsr-vlc-viewer-addon/intf/cnsr_intf.lua` will be created in `/Applications/VLC.app/Contents/MacOS/share/lua/intf`. Every change that will be made in `cnsr-vlc-viewer-addon` will be also made to the installed extension.
+    3. You can now jump to instruction #6, and also skip the entire "Setting up the project for development" section.
 			       
-3. If you want the add-on to be available for all the users of the 
+4. If you want the add-on to be available for all the users of the 
     computer, access the `lua` folder using these paths:
    - Windows- `%ProgramFiles%\VideoLAN\VLC\lua`<br/>  or  `%ProgramFiles (x86)%\VideoLAN\VLC\lua`<br/>
    - Linux- `/usr/lib/vlc/lua` or use the command `find /usr/lib -iname VLSub.luac` to find the directory <br/>
@@ -32,17 +37,17 @@ Supported OS: Windows, Linux and Mac OS.
    If the paths above don't exist and you already have VLC installed on your computer try to uninstall it and then reinstall it. 
    Then, make sure you are using the most updated version of VLC.
   
-4. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file into the `lua` folder.
-5. Start the Extension in VLC menu
+5. Extract the contents of the `cnsr-vlc-viewer-addon-main` directory within the downloaded zip file into the `lua` folder.
+6. Start the Extension in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
-6. Choose your password and your password's hint, please choose a password you will remember and your child will nogitt know.
-Click save to set the cnsr interface script as an extra interface.
-7. Restart VLC
-8. Start the Extension again in VLC menu
+7. Choose your password and your password's hint, please choose a password you will remember and your child will not know.
+   Click save to set the cnsr interface script as an extra interface.
+8. Restart VLC
+9. Start the Extension again in VLC menu
     - `View > cnsr` for Windows/Linux.
     - `VLC > Extensions > cnsr` for Mac OS.
-9. Configure the cnsr categories to your liking.
+10. Configure the cnsr categories to your liking.
 
 ### How to use CNSR files:
 CNSR files are not created automatically, they must be downloaded or created manually<br/>
@@ -67,7 +72,7 @@ Then the cnsr file should be: <br>
 `/foo/bar/myvid.cnsr`
 
 #### NOTICE
-- Currently there is an issue with directories that have underscore or spaces, so please try to avoid them
+- Currently there is an issue with directories that have hebrew in their path, so try to avoid them
 
 
 # Setting up the project for development

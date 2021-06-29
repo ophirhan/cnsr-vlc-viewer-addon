@@ -2,17 +2,30 @@ json = require ('dkjson')
 Memory = require ('cnsr_memory')
 os.setlocale("C", "all") -- fixes numeric locale issue on Mac
 
+function protect(tbl)
+	return setmetatable({}, {
+		__index = tbl,
+		__newindex = function(t, key, value)
+			error("attempting to change constant " ..
+					tostring(key) .. " to " .. tostring(value), 2)
+		end
+	})
+end
 -- constants
+constants = {
+	MS_IN_SEC =1000000,
+	SKIP=2,
+	FRAME_INTERVAL = 30000,
+	SKIP_SAFETY = 12000,
+	MINIMUM_DISPLAY_TIME = 2000000,
+	GET_CONFIG_INTERVAL = 500,
+	DESCRIPTIONS = { [1] = "violence",
+					 [2] = "verbal abuse",
+					 [3] =  "nudity",
+					 [4] =  "alcohol and drug consumption"}
+}
 config={}
-MS_IN_SEC =1000000
-FRAME_INTERVAL = 30000
-SKIP_SAFETY = 10000
-MINIMUM_DISPLAY_TIME = 2000000
-GET_CONFIG_INTERVAL = 500
-DESCRIPTIONS = { [1] = "violence",
-				 [2] = "verbal abuse",
-				 [3] =  "nudity",
-				 [4] =  "alcohol and drug consumption"}
+constants = protect(constants)
 -- end constants
 
 -- globals
@@ -21,7 +34,6 @@ tag_by_end_time_index = 1
 current_time = 0
 prev_time = 0
 forward = false
-SKIP=2
 input = nil
 actions = {}
 -- end globals
@@ -39,7 +51,7 @@ action: one of SHOW, HIDE, MUTE, SKIP
 this function checks if the action is no longer relevant(passed it or )
 --]]
 function check_deactivate(action)
-	if action.activated and (current_time > action.end_time or current_time < action.start_time) then
+	if action.activated and (current_time > action.end_time+offset or current_time < action.start_time+offset) then
 		action.deactivate()
 		action.activated = false
 	end
@@ -90,7 +102,7 @@ SKIP handling starts here
 actions.skip = {}
 
 function actions.skip.execute(tag)
-	skip(tag.start_time, tag.end_time)
+	skip(tag.start_time+offset, tag.end_time+offset)
 	display_reason("skipped", tag.category, tag.end_time)
 end
 
@@ -131,6 +143,9 @@ actions.hide.update= function() check_deactivate(actions.hide) end
 function actions.hide.activate()
 	actions.hide.hide_filter = vlc.object.vout()
 	vlc.var.create(actions.hide.hide_filter, "contrast", 0)
+	vlc.var.create(actions.hide.hide_filter, "brightness", 0)
+	vlc.var.create(actions.hide.hide_filter, "saturation", 0)
+	vlc.var.create(actions.hide.hide_filter, "gamma", 0)
 	vlc.var.set(actions.hide.hide_filter, "video-filter", "adjust")
 	check_collision()
 end
@@ -150,23 +165,24 @@ function looper()
 		if vlc.volume.get() == -256 then break end  -- inspired by syncplay.lua; kills vlc.exe process in Task Manager
 		if Memory.get_written() then -- config invocation callback
 			get_config()
+			tag_index = 1
+			tag_by_end_time_index = 1
 		end
 		if vlc.playlist.status()~="stopped" and config.CNSR and config.CNSR.tags then
 			local tags = config.CNSR.tags
 			local tags_by_end_time = config.CNSR.tags_by_end_time
-
+            offset = config.CNSR.offset*constants.MS_IN_SEC
 			input = vlc.object.input()
 			current_time = vlc.var.get(input,"time")
 			update_actions()
 			local tag = get_current_tag(tags, tags_by_end_time)
-
-			while tag and current_time > tag.start_time do
+			while tag and current_time > tag.start_time+offset do
 				actions[tag.action].execute(tag)
 				tag = get_current_tag(tags, tags_by_end_time, tag) --if we skipped back we need to rewind the index
 			end
 			prev_time = current_time
 		end
-		next_loop_time = next_loop_time + FRAME_INTERVAL
+		next_loop_time = next_loop_time + constants.FRAME_INTERVAL
 		vlc.misc.mwait(next_loop_time) --us. optional, optimally once every frame, something like vlc.var.get(input, "fps")?
 	end
 end
@@ -187,8 +203,8 @@ tag_end: ending time of the tag
 this function shows the user the reason for the skip and the category that caused it.
 --]]
 function display_reason(reason_string, category, tag_end)
-	if tag_end - current_time > MINIMUM_DISPLAY_TIME and forward then
-		vlc.osd.message(reason_string .. " " .. DESCRIPTIONS[category], nil, "bottom-right")
+	if tag_end - current_time > constants.MINIMUM_DISPLAY_TIME and forward then
+		vlc.osd.message(reason_string .. " " .. constants.DESCRIPTIONS[category], nil, "bottom-right")
 	end
 end
 
@@ -200,9 +216,9 @@ this function does the logic for skipping in the video.
 function skip(skip_start, skip_end)
 	prev_time = current_time
 	if forward then
-		current_time = math.min(skip_end + SKIP_SAFETY, vlc.input.item():duration() * MS_IN_SEC) --think if we want to!
+		current_time = math.min(skip_end + constants.SKIP_SAFETY, vlc.input.item():duration() * constants.MS_IN_SEC) --think if we want to!
 	else -- we went back in time, cut the duration of skip tag from timeline
-		current_time = math.max(skip_start, 0)
+		current_time = math.max(skip_start- constants.MS_IN_SEC*5, 0)
 	end
 	update_actions()
 	vlc.var.set(input,"time", current_time)
@@ -213,11 +229,11 @@ tags_by_end_time: all the tags ordered by ending time
 this function finds the number of tags that are still relevant (didn't pass them)
 --]]
 function get_num_relevant_tags(tags_by_end_time)
-	while tag_by_end_time_index > 1 and current_time < tags_by_end_time[tag_by_end_time_index - 1].end_time do
+	while tag_by_end_time_index > 1 and current_time < tags_by_end_time[tag_by_end_time_index - 1].end_time+offset do
 		tag_by_end_time_index = tag_by_end_time_index - 1
 	end
 
-	while tags_by_end_time[tag_by_end_time_index] and current_time > tags_by_end_time[tag_by_end_time_index].end_time do
+	while tags_by_end_time[tag_by_end_time_index] and current_time > tags_by_end_time[tag_by_end_time_index].end_time+offset do
 		tag_by_end_time_index = tag_by_end_time_index + 1
 	end
 
@@ -233,11 +249,11 @@ tags: all the tags sorted by starting time
 this function finds the next relevant tag (the next tag that should be executed)
 --]]
 function get_current_tag(tags, tags_by_end_time, prev_tag)
-	forward = prev_time <= current_time
-	if prev_tag and prev_tag.action ~= SKIP then
+    forward = prev_time <= current_time
+	if prev_tag and prev_tag.action ~= constants.SKIP then
 		tag_index = tag_index + 1
 	elseif forward then
-		while tags[tag_index] and current_time > tags[tag_index].end_time do
+		while tags[tag_index] and current_time > tags[tag_index].end_time+offset do
 			tag_index = tag_index + 1
 		end
 	else
@@ -246,7 +262,7 @@ function get_current_tag(tags, tags_by_end_time, prev_tag)
 		relevant_tags_after_index = #tags - tag_index + 1
 		while relevant_tags_after_index < relevant_tags do
 			tag_index = tag_index - 1
-			if current_time < tags[tag_index].end_time  then
+			if current_time < tags[tag_index].end_time+offset  then
 				relevant_tags_after_index = relevant_tags_after_index + 1
 			end
 		end
@@ -266,20 +282,26 @@ end
 this function reads configs from a file and sets the config parameter
 --]]
 function get_config()
-	config = json.decode(Memory.get_config_string())
+    config = json.decode(Memory.get_config_string())
 
-	if config.CNSR == nil then
-		config.CNSR = {}
-	end
+    if config == nil then -- todo write config to an external file for later loads/use bookmarkN as caching mechanizm
+        config = {}
+    end
 
-	if config.CNSR.tags == nil then
-		config.CNSR.tags = {}
-	end
+    if config.CNSR == nil then
+        config.CNSR = {}
+    end
 
-	if config.CNSR.tags_by_end_time  == nil then
-		config.CNSR.tags_by_end_time  = {}
-	end
+    if config.CNSR.tags == nil then
+        config.CNSR.tags = {}
+    end
+
+    if config.CNSR.tags_by_end_time  == nil then
+        config.CNSR.tags_by_end_time  = {}
+    end
+    if config.CNSR.offset == nil then
+        config.CNSR.offset = 0
+    end
 end
-
 
 looper() -- starter
