@@ -229,7 +229,7 @@ function load_tags_from_file()
 	if cnsr_uri == nil then
 		return nil
 	end
-	cnsr_file = io.open(cnsr_uri,"r")
+	cnsr_file = vlc.io.open(cnsr_uri,"r")
 	if cnsr_file == nil then
 		print_to_vlc_and_log("Failed to load cnsr file")
 		return nil
@@ -240,16 +240,18 @@ function load_tags_from_file()
 		return nil
 	end
 
-	io.close(cnsr_file)
-	cnsr_file = io.open(cnsr_uri,"r")
+	cnsr_file:close()
+	cnsr_file = vlc.io.open(cnsr_uri,"r")
 
-	io.input(cnsr_file)
+
 
 	raw_tags ={}
-	for line in io.lines() do
+	local line = cnsr_file:read("*line")
+	while line ~= nil do
 		table.insert(raw_tags, line_to_tag(line))
+		line = cnsr_file:read("*line")
 	end
-	io.close(cnsr_file)
+	cnsr_file:close()
 	cnsr_file = nil
 	collectgarbage()
 
@@ -270,8 +272,8 @@ end
 this function checks that the format of the file is a cnsr format + the tag is of a legal class
 --]]
 function valid_cnsr_file(cnsr_file)
-	io.input(cnsr_file)
-	for line in io.lines() do
+	local line = cnsr_file:read("*line")
+	while line ~= nil do
 		if not valid_tag(line) then return false end
 		local start_time, end_time = string.match(line,"([^-]+)-([^-]+)")
 		if start_time == nil or end_time == nil then return false end
@@ -279,6 +281,7 @@ function valid_cnsr_file(cnsr_file)
 		pat_for_end = "%d%d:%d%d:%d%d,%d%d%d; %d"
 		if string.match(start_time,pat_for_start) == nil or string.match(end_time,pat_for_end) == nil then return false
 		end
+		line = cnsr_file:read("*line")
 	end
 	return true
 end
